@@ -34,11 +34,18 @@ export default function ResendVerificationPage() {
     }
 
     try {
-      // Simulate API call to resend verification email
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+        const res = await fetch('/api/auth/resendverification', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            throw new Error(data.error || "Failed to resend verification email.");
+        }
       setIsSuccess(true)
-    } catch (error) {
-      setError("Failed to send verification email. Please try again.")
+    } catch (error: any) {
+      setError(error.message || "Failed to send verification email. Please try again.")
     } finally {
       setIsLoading(false)
     }

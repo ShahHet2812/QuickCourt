@@ -18,7 +18,9 @@ const UserSchema = new mongoose.Schema({
   city: { type: String },
   state: { type: String },
   zipCode: { type: String },
-  
+  verificationCode: { type: String },
+  verificationCodeExpires: { type: Date },
+
   // Add this settings object
   settings: {
     emailNotifications: { type: Boolean, default: true },

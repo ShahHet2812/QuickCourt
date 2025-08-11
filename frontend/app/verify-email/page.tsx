@@ -1,9 +1,8 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect, Suspense } from "react"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import { Mail, CheckCircle, RefreshCw, ArrowLeft, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -13,25 +12,25 @@ import { Label } from "@/components/ui/label"
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams()
+  const router = useRouter();
   const email = searchParams.get("email") || ""
 
   const [verificationCode, setVerificationCode] = useState("")
   const [isVerifying, setIsVerifying] = useState(false)
   const [isResending, setIsResending] = useState(false)
-  const [isVerified, setIsVerified] = useState(false)
   const [error, setError] = useState("")
   const [timeLeft, setTimeLeft] = useState(300) // 5 minutes in seconds
   const [canResend, setCanResend] = useState(false)
 
   // Countdown timer
   useEffect(() => {
-    if (timeLeft > 0 && !isVerified) {
+    if (timeLeft > 0) {
       const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000)
       return () => clearTimeout(timer)
-    } else if (timeLeft === 0) {
+    } else {
       setCanResend(true)
     }
-  }, [timeLeft, isVerified])
+  }, [timeLeft])
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -51,21 +50,20 @@ function VerifyEmailContent() {
     }
 
     try {
-      // Simulate API call for verification
-      await new Promise((resolve, reject) => {
-        setTimeout(() => {
-          // Simulate success/failure
-          if (verificationCode === "123456") {
-            resolve(true)
-          } else {
-            reject(new Error("Invalid verification code"))
-          }
-        }, 2000)
-      })
+      const res = await fetch('/api/auth/verifyemail', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, code: verificationCode })
+      });
+      const data = await res.json();
 
-      setIsVerified(true)
-    } catch (error) {
-      setError("Invalid verification code. Please try again.")
+      if (!res.ok) {
+        throw new Error(data.error || "Invalid verification code");
+      }
+
+      router.push('/verify-email/success');
+    } catch (error: any) {
+      setError(error.message || "Invalid verification code. Please try again.")
     } finally {
       setIsVerifying(false)
     }
@@ -76,49 +74,24 @@ function VerifyEmailContent() {
     setError("")
 
     try {
-      // Simulate API call to resend verification email
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-
+        const res = await fetch('/api/auth/resendverification', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            throw new Error(data.error || "Failed to resend verification email.");
+        }
       // Reset timer and disable resend button
       setTimeLeft(300)
       setCanResend(false)
 
-      console.log("Verification email resent to:", email)
-    } catch (error) {
-      setError("Failed to resend verification email. Please try again.")
+    } catch (error: any) {
+      setError(error.message || "Failed to resend verification email. Please try again.")
     } finally {
       setIsResending(false)
     }
-  }
-
-  if (isVerified) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-green-900 flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          <Card className="shadow-2xl border-0">
-            <CardContent className="text-center p-8">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <CheckCircle className="w-8 h-8 text-green-600" />
-              </div>
-              <h1 className="text-2xl font-bold text-slate-900 mb-2">Email Verified!</h1>
-              <p className="text-gray-600 mb-6">
-                Your email has been successfully verified. You can now access all features of QuickCourt.
-              </p>
-              <div className="space-y-3">
-                <Link href="/login">
-                  <Button className="w-full bg-green-600 hover:bg-green-700">Continue to Login</Button>
-                </Link>
-                <Link href="/">
-                  <Button variant="outline" className="w-full bg-transparent">
-                    Go to Homepage
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    )
   }
 
   return (
