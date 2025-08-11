@@ -1,9 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { ChevronLeft, ChevronRight, MapPin, Star } from "lucide-react"
+import { ChevronLeft, ChevronRight, MapPin, Star, Play, Pause } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 
@@ -13,18 +13,48 @@ const heroImages = [
     alt: "Badminton Court",
     title: "Premium Badminton Courts",
     subtitle: "Book your game today",
+    description: "Professional-grade courts with premium equipment",
+    sport: "badminton",
   },
   {
     src: "/outdoor-tennis-court.png",
     alt: "Tennis Court",
     title: "Professional Tennis Courts",
     subtitle: "Play like a pro",
+    description: "Clay, hard, and grass courts available",
+    sport: "tennis",
   },
   {
     src: "/football-turf-field.png",
     alt: "Football Turf",
     title: "Football Turf Fields",
     subtitle: "Gather your team",
+    description: "FIFA-approved artificial turf fields",
+    sport: "football",
+  },
+  {
+    src: "/boxcricket.jpg",
+    alt: "Cricket Ground",
+    title: "Cricket Grounds",
+    subtitle: "Perfect pitches for your match",
+    description: "Well-maintained cricket grounds with practice nets",
+    sport: "cricket",
+  },
+  {
+    src: "/basketball-hoop-court.png",
+    alt: "Basketball Court",
+    title: "Indoor Basketball Courts",
+    subtitle: "Dunk your way to victory",
+    description: "Professional basketball courts with proper lighting",
+    sport: "basketball",
+  },
+  {
+    src: "/sports-arena-badminton.png",
+    alt: "Sports Arena",
+    title: "Multi-Sport Arena",
+    subtitle: "All sports under one roof",
+    description: "Versatile venue for multiple sports activities",
+    sport: "multi-sport",
   },
 ]
 
@@ -102,79 +132,170 @@ const popularSports = [
 
 export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0)
+  const [isPlaying, setIsPlaying] = useState(true)
+  const [isHovered, setIsHovered] = useState(false)
+  const [isTransitioning, setIsTransitioning] = useState(false)
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % heroImages.length)
-    }, 5000)
-    return () => clearInterval(timer)
-  }, [])
-
-  const nextSlide = () => {
+  const nextSlide = useCallback(() => {
+    if (isTransitioning) return
+    setIsTransitioning(true)
     setCurrentSlide((prev) => (prev + 1) % heroImages.length)
-  }
+    // Reset transition state after animation completes
+    setTimeout(() => setIsTransitioning(false), 1000)
+  }, [isTransitioning])
 
-  const prevSlide = () => {
+  const prevSlide = useCallback(() => {
+    if (isTransitioning) return
+    setIsTransitioning(true)
     setCurrentSlide((prev) => (prev - 1 + heroImages.length) % heroImages.length)
-  }
+    // Reset transition state after animation completes
+    setTimeout(() => setIsTransitioning(false), 1000)
+  }, [isTransitioning])
+
+  const goToSlide = useCallback((index: number) => {
+    if (isTransitioning || index === currentSlide) return
+    setIsTransitioning(true)
+    setCurrentSlide(index)
+    // Reset transition state after animation completes
+    setTimeout(() => setIsTransitioning(false), 1000)
+  }, [isTransitioning, currentSlide])
+
+  const togglePlayPause = useCallback(() => {
+    setIsPlaying(!isPlaying)
+  }, [isPlaying])
+
+  // Auto-play functionality with smoother timing
+  useEffect(() => {
+    if (!isPlaying || isHovered || isTransitioning) return
+
+    const timer = setInterval(() => {
+      nextSlide()
+    }, 4000) // 4 seconds for better engagement
+
+    return () => clearInterval(timer)
+  }, [isPlaying, isHovered, isTransitioning, nextSlide])
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.key === 'ArrowLeft') {
+        prevSlide()
+      } else if (event.key === 'ArrowRight') {
+        nextSlide()
+      } else if (event.key === ' ') {
+        event.preventDefault()
+        togglePlayPause()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyPress)
+    return () => window.removeEventListener('keydown', handleKeyPress)
+  }, [prevSlide, nextSlide, togglePlayPause])
 
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative h-[400px] sm:h-[500px] lg:h-[600px] overflow-hidden">
+      <section 
+        className="relative h-[400px] sm:h-[500px] lg:h-[600px] overflow-hidden"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
         <div className="relative w-full h-full">
           {heroImages.map((image, index) => (
             <div
               key={index}
-              className={`absolute inset-0 transition-opacity duration-1000 ${
-                index === currentSlide ? "opacity-100" : "opacity-0"
+              className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
+                index === currentSlide ? "opacity-100 scale-100" : "opacity-0 scale-105"
               }`}
             >
               <Image src={image.src || "/placeholder.svg"} alt={image.alt} fill className="object-cover" />
-              <div className="absolute inset-0 bg-black bg-opacity-40" />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/60" />
               <div className="absolute inset-0 flex items-center justify-center text-center text-white">
-                <div>
-                  <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4">{image.title}</h1>
-                  <p className="text-lg sm:text-xl md:text-2xl mb-6 sm:mb-8">{image.subtitle}</p>
-                  <Link href="/venues">
-                    <Button
-                      size="lg"
-                      className="bg-green-600 hover:bg-green-700 text-base sm:text-lg px-6 sm:px-8 py-3"
-                    >
-                      Book Now
-                    </Button>
-                  </Link>
+                <div className="max-w-4xl mx-auto px-4">
+                  <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 animate-fade-in">
+                    {image.title}
+                  </h1>
+                  <p className="text-lg sm:text-xl md:text-2xl mb-2 animate-fade-in-delay">
+                    {image.subtitle}
+                  </p>
+                  <p className="text-base sm:text-lg mb-6 sm:mb-8 text-gray-200 animate-fade-in-delay-2">
+                    {image.description}
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in-delay-3">
+                    <Link href="/venues">
+                      <Button
+                        size="lg"
+                        className="bg-green-600 hover:bg-green-700 text-base sm:text-lg px-6 sm:px-8 py-3 transition-all duration-300 hover:scale-105"
+                      >
+                        Book Now
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
           ))}
         </div>
 
-        {/* Navigation Arrows */}
+        {/* Enhanced Navigation Arrows */}
         <button
           onClick={prevSlide}
-          className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-2 rounded-full transition-all"
+          disabled={isTransitioning}
+          className={`absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-3 rounded-full transition-all duration-300 hover:scale-110 backdrop-blur-sm border border-white/20 ${
+            isTransitioning ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
+          aria-label="Previous slide"
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
         <button
           onClick={nextSlide}
-          className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-2 rounded-full transition-all"
+          disabled={isTransitioning}
+          className={`absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-3 rounded-full transition-all duration-300 hover:scale-110 backdrop-blur-sm border border-white/20 ${
+            isTransitioning ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
+          aria-label="Next slide"
         >
           <ChevronRight className="w-6 h-6" />
         </button>
 
-        {/* Dots Indicator */}
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+        {/* Play/Pause Button */}
+        <button
+          onClick={togglePlayPause}
+          className="absolute top-4 right-4 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-all duration-300 backdrop-blur-sm border border-white/20"
+          aria-label={isPlaying ? "Pause slideshow" : "Play slideshow"}
+        >
+          {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+        </button>
+
+        {/* Enhanced Dots Indicator */}
+        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-3">
           {heroImages.map((_, index) => (
             <button
               key={index}
-              onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full transition-all ${
-                index === currentSlide ? "bg-white" : "bg-white bg-opacity-50"
-              }`}
+              onClick={() => goToSlide(index)}
+              disabled={isTransitioning}
+              className={`w-4 h-4 rounded-full transition-all duration-300 hover:scale-125 ${
+                index === currentSlide 
+                  ? "bg-white shadow-lg" 
+                  : "bg-white/50 hover:bg-white/70"
+              } ${isTransitioning ? 'cursor-not-allowed' : ''}`}
+              aria-label={`Go to slide ${index + 1}`}
             />
           ))}
+        </div>
+
+        {/* Slide Counter */}
+        <div className="absolute bottom-4 left-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm backdrop-blur-sm">
+          {currentSlide + 1} / {heroImages.length}
+        </div>
+
+        {/* Progress Bar */}
+        <div className="absolute bottom-0 left-0 w-full h-1 bg-white/20">
+          <div 
+            className="h-full bg-green-500 transition-all duration-1000 ease-linear"
+            style={{ width: `${((currentSlide + 1) / heroImages.length) * 100}%` }}
+          />
         </div>
       </section>
 

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
 import { Search, MapPin, Star, ChevronLeft, ChevronRight } from "lucide-react"
@@ -76,6 +77,40 @@ const venues = [
     sport: "Tennis",
     amenities: ["Clay Courts", "Lighting", "Pro Shop"],
   },
+  // Cricket venues
+  {
+    id: 7,
+    name: "Royal Cricket Arena",
+    location: "Old Town, West Block",
+    price: 65,
+    rating: 4.6,
+    reviews: 81,
+    image: "/placeholder.jpg",
+    sport: "Cricket",
+    amenities: ["Practice Nets", "Parking", "Scoreboard"],
+  },
+  {
+    id: 8,
+    name: "Green Pitch Grounds",
+    location: "Lakeside, South Park",
+    price: 55,
+    rating: 4.5,
+    reviews: 64,
+    image: "/placeholder.jpg",
+    sport: "Cricket",
+    amenities: ["Floodlights", "Changing Rooms", "Cafeteria"],
+  },
+  {
+    id: 9,
+    name: "Metro Cricket Complex",
+    location: "Metro Center, Block A",
+    price: 70,
+    rating: 4.7,
+    reviews: 102,
+    image: "/placeholder.jpg",
+    sport: "Cricket",
+    amenities: ["Multiple Pitches", "Equipment Rental", "Parking"],
+  },
 ]
 
 export default function VenuesPage() {
@@ -86,19 +121,26 @@ export default function VenuesPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 6
 
+  // Read sport from URL and react to client-side navigation changes
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
+
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search)
-    const sportParam = urlParams.get("sport")
-    if (sportParam) {
-      setSportFilter(sportParam)
-    }
-  }, [])
+    const sportParam = searchParams.get("sport")
+    setSportFilter(sportParam ? sportParam.toLowerCase() : "all")
+  }, [searchParams])
 
   const filteredVenues = venues.filter((venue) => {
     const matchesSearch =
       venue.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       venue.location.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesSport = sportFilter === "all" || venue.sport.toLowerCase() === sportFilter
+    
+    // Fix case sensitivity issue - normalize both sides to lowercase
+    const venueSportLower = venue.sport.toLowerCase()
+    const sportFilterLower = sportFilter.toLowerCase()
+    const matchesSport = sportFilter === "all" || venueSportLower === sportFilterLower
+    
     const matchesPrice =
       priceFilter === "all" ||
       (priceFilter === "low" && venue.price < 60) ||
@@ -138,18 +180,49 @@ export default function VenuesPage() {
 
             {/* Filters */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-              <Select value={sportFilter} onValueChange={setSportFilter}>
-                <SelectTrigger className="w-full sm:w-40 h-12 rounded-xl">
-                  <SelectValue placeholder="Sport Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Sports</SelectItem>
-                  <SelectItem value="badminton">Badminton</SelectItem>
-                  <SelectItem value="tennis">Tennis</SelectItem>
-                  <SelectItem value="football">Football</SelectItem>
-                  <SelectItem value="basketball">Basketball</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex gap-2">
+                <Select
+                  value={sportFilter}
+                  onValueChange={(value) => {
+                    setSportFilter(value)
+                    const params = new URLSearchParams(searchParams.toString())
+                    if (value === "all") {
+                      params.delete("sport")
+                    } else {
+                      params.set("sport", value)
+                    }
+                    const query = params.toString()
+                    router.push(query ? `${pathname}?${query}` : pathname)
+                  }}
+                >
+                  <SelectTrigger className="w-full sm:w-40 h-12 rounded-xl">
+                    <SelectValue placeholder="Sport Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">🏟️ All Sports</SelectItem>
+                  <SelectItem value="badminton">🏸 Badminton</SelectItem>
+                  <SelectItem value="tennis">🎾 Tennis</SelectItem>
+                  <SelectItem value="football">⚽ Football</SelectItem>
+                  <SelectItem value="basketball">🏀 Basketball</SelectItem>
+                    <SelectItem value="cricket">🏏 Cricket</SelectItem>
+                  </SelectContent>
+                </Select>
+                {sportFilter !== "all" && (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSportFilter("all")
+                      const params = new URLSearchParams(searchParams.toString())
+                      params.delete("sport")
+                      const query = params.toString()
+                      router.push(query ? `${pathname}?${query}` : pathname)
+                    }}
+                    className="h-12 px-4 text-sm"
+                  >
+                    Clear Filter
+                  </Button>
+                )}
+              </div>
 
               <Select value={priceFilter} onValueChange={setPriceFilter}>
                 <SelectTrigger className="w-full sm:w-40 h-12 rounded-xl">
@@ -182,6 +255,11 @@ export default function VenuesPage() {
         <div className="mb-6">
           <p className="text-gray-600">
             Showing {paginatedVenues.length} of {filteredVenues.length} venues
+            {sportFilter !== "all" && (
+              <span className="ml-2 inline-block bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                Filtered by: {sportFilter.charAt(0).toUpperCase() + sportFilter.slice(1)}
+              </span>
+            )}
           </p>
         </div>
 
