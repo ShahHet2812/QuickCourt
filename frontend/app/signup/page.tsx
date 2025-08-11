@@ -15,7 +15,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 export default function SignupPage() {
   // State for form data
-  const [formData, setFormData] = useState({
+  interface FormDataShape {
+    firstName: string
+    lastName: string
+    email: string
+    phone: string
+    password: string
+    confirmPassword: string
+    userType: string
+  }
+
+  type ErrorKey = keyof FormDataShape | "avatar" | "terms" | "general"
+  type FormErrors = Partial<Record<ErrorKey, string>>
+
+  const [formData, setFormData] = useState<FormDataShape>({
     firstName: "",
     lastName: "",
     email: "",
@@ -26,8 +39,8 @@ export default function SignupPage() {
   })
   
   // State for profile picture
-  const [avatarFile, setAvatarFile] = useState(null)
-  const [avatarPreview, setAvatarPreview] = useState(null)
+  const [avatarFile, setAvatarFile] = useState<File | null>(null)
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   
   // State for password visibility
   const [showPassword, setShowPassword] = useState(false)
@@ -38,22 +51,22 @@ export default function SignupPage() {
   
   // State for loading and errors
   const [isLoading, setIsLoading] = useState(false)
-  const [errors, setErrors] = useState({})
+  const [errors, setErrors] = useState<FormErrors>({})
 
   // Mock database of existing emails for validation
   const existingEmails = ["test@example.com", "john.doe@quickcourt.com"]
 
   // Handle changes to form inputs
-  const handleInputChange = (field, value) => {
+  const handleInputChange = (field: keyof FormDataShape, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
     // Clear the specific error for the field being edited
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }))
+    if (errors[field as ErrorKey]) {
+      setErrors((prev) => ({ ...prev, [field as ErrorKey]: "" }))
     }
   }
 
   // Handle avatar file selection and size validation
-  const handleAvatarChange = (e) => {
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
       if (file.size > 1 * 1024 * 1024) { // 1 MB limit
@@ -71,8 +84,8 @@ export default function SignupPage() {
   }
 
   // Validate the entire form
-  const validateForm = () => {
-    const newErrors = {}
+  const validateForm = (): FormErrors => {
+    const newErrors: FormErrors = {}
     
     // Profile picture validation
     if (!avatarFile) newErrors.avatar = "Profile picture is required"
@@ -126,7 +139,7 @@ export default function SignupPage() {
   }
 
   // Handle form submission
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
 
@@ -152,7 +165,7 @@ export default function SignupPage() {
   }
   
   // Calculate password strength for the indicator
-  const passwordStrength = () => {
+  const passwordStrength = (): number => {
     const password = formData.password
     let strength = 0
     if (password.length >= 8) strength++
@@ -163,13 +176,13 @@ export default function SignupPage() {
     return strength
   }
 
-  const getStrengthColor = (strength) => {
+  const getStrengthColor = (strength: number): string => {
     if (strength <= 2) return "bg-red-500"
     if (strength <= 4) return "bg-yellow-500"
     return "bg-green-500"
   }
 
-  const getStrengthText = (strength) => {
+  const getStrengthText = (strength: number): string => {
     if (strength <= 2) return "Weak"
     if (strength <= 4) return "Medium"
     return "Strong"
@@ -211,7 +224,7 @@ export default function SignupPage() {
                 </Label>
                 <div className="relative w-24 h-24 rounded-full border-2 border-gray-200 overflow-hidden group">
                   {avatarPreview ? (
-                    <Image src={avatarPreview} alt="Profile Preview" layout="fill" objectFit="cover" />
+                    <Image src={avatarPreview} alt="Profile Preview" fill className="object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
                       <User className="w-12 h-12" />
@@ -302,7 +315,7 @@ export default function SignupPage() {
                   <Input
                     id="phone"
                     type="tel"
-                    placeholder="+1 (555) 123-4567"
+                    placeholder="+91 12345 67890"
                     value={formData.phone}
                     onChange={(e) => handleInputChange("phone", e.target.value)}
                     className={`pl-10 h-12 rounded-xl border-gray-200 focus:border-green-500 focus:ring-green-500 ${
@@ -447,7 +460,7 @@ export default function SignupPage() {
                   <Checkbox
                     id="terms"
                     checked={agreeToTerms}
-                    onCheckedChange={(checked) => setAgreeToTerms(checked)}
+                    onCheckedChange={(checked) => setAgreeToTerms(checked === true)}
                     className="mt-1"
                   />
                   <Label htmlFor="terms" className="text-sm text-gray-600 cursor-pointer leading-relaxed">

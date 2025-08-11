@@ -102,7 +102,7 @@ const venues = [
   {
     id: 9,
     name: "City Kickers Football",
-    location: "Bopal, Ahmedabad",
+    location:  "Bopal, Ahmedabad",
     price: 1950,
     rating: 4.6,
     reviews: 180,

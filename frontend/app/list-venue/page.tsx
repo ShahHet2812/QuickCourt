@@ -236,7 +236,7 @@ export default function ListVenuePage() {
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => handleInputChange("phone", e.target.value)}
-                    placeholder="+1 (555) 123-4567"
+                    placeholder="+91 12345 67890"
                     required
                   />
                 </div>
@@ -270,21 +270,20 @@ export default function ListVenuePage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center">
-                <DollarSign className="w-5 h-5 mr-2" />
                 Pricing & Availability
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <Label htmlFor="pricePerHour">Price per Hour ($) *</Label>
+                  <Label htmlFor="pricePerHour">Price per Hour (₹) *</Label>
                   <Input
                     id="pricePerHour"
                     type="number"
                     value={formData.pricePerHour}
                     onChange={(e) => handleInputChange("pricePerHour", e.target.value)}
-                    placeholder="50"
-                    min="1"
+                    placeholder="1500"
+                    min="1000"
                     required
                   />
                 </div>
