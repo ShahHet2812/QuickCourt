@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useAuth } from "@/context/AuthContext"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 
 interface KpiData {
     totalBookings: number;
@@ -32,12 +33,18 @@ interface Booking {
     price: number;
     status: string;
 }
+interface ChartData {
+    bookingTrends: { [key: string]: number };
+    earningsSummary: { [key: string]: number };
+    peakBookingHours: { [key: string]: number };
+}
 
 export default function OwnerDashboard() {
   const { token } = useAuth();
   const [kpiData, setKpiData] = useState<KpiData | null>(null);
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [upcomingBookings, setUpcomingBookings] = useState<Booking[]>([]);
+  const [chartData, setChartData] = useState<ChartData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -64,6 +71,7 @@ export default function OwnerDashboard() {
         setKpiData(data.kpiData);
         setFacilities(data.facilities);
         setUpcomingBookings(data.upcomingBookings);
+        setChartData(data.charts);
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -76,6 +84,11 @@ export default function OwnerDashboard() {
 
   if (loading) return <div className="text-center p-10">Loading Dashboard...</div>
   if (error) return <div className="text-center p-10 text-red-500">Error: {error}</div>
+
+  const bookingTrendsData = chartData ? Object.entries(chartData.bookingTrends).map(([date, count]) => ({ date, count })) : [];
+  const earningsSummaryData = chartData ? Object.entries(chartData.earningsSummary).map(([name, earnings]) => ({ name, earnings })) : [];
+  const peakBookingHoursData = chartData ? Object.entries(chartData.peakBookingHours).map(([hour, count]) => ({ hour: `${hour}:00`, count })) : [];
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -143,7 +156,52 @@ export default function OwnerDashboard() {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Booking Trends & Revenue Charts can be made dynamic later */}
+          <Card>
+            <CardHeader><CardTitle>Booking Trends</CardTitle></CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={bookingTrendsData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Line type="monotone" dataKey="count" stroke="#8884d8" />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader><CardTitle>Earnings Summary</CardTitle></CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie data={earningsSummaryData} dataKey="earnings" nameKey="name" cx="50%" cy="50%" outerRadius={100} fill="#8884d8" label>
+                    {earningsSummaryData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+          <Card className="lg:col-span-2">
+            <CardHeader><CardTitle>Peak Booking Hours</CardTitle></CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={peakBookingHoursData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="hour" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="count" fill="#82ca9d" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
         </div>
 
         <Card className="mb-8">

@@ -29,12 +29,36 @@ exports.getOwnerDashboard = async (req, res) => {
             status: b.status
         }));
 
+    // Chart Data
+    const bookingTrends = bookings.reduce((acc, booking) => {
+        const date = new Date(booking.date).toISOString().split('T')[0];
+        acc[date] = (acc[date] || 0) + 1;
+        return acc;
+    }, {});
+
+    const earningsSummary = bookings.reduce((acc, booking) => {
+        const venueName = venues.find(v => v._id.equals(booking.venue))?.name || 'Unknown';
+        if (booking.status === 'confirmed' || booking.status === 'completed') {
+            acc[venueName] = (acc[venueName] || 0) + booking.totalPrice;
+        }
+        return acc;
+    }, {});
+
+    const peakBookingHours = bookings.reduce((acc, booking) => {
+        booking.timeSlots.forEach(slot => {
+            const hour = parseInt(slot.split(':')[0], 10);
+            acc[hour] = (acc[hour] || 0) + 1;
+        });
+        return acc;
+    }, {});
+
     res.status(200).json({
       success: true,
       data: {
         kpiData: { totalBookings, activeCourts, monthlyEarnings, occupancyRate },
         facilities: venues,
-        upcomingBookings
+        upcomingBookings,
+        charts: { bookingTrends, earningsSummary, peakBookingHours }
       }
     });
   } catch (error) {

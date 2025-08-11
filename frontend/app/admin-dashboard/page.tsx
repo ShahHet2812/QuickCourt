@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useAuth } from "@/context/AuthContext"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 
 interface AdminKpis {
     totalUsers: number;
@@ -33,12 +34,20 @@ interface User {
     createdAt: string;
     status: string;
 }
+interface ChartData {
+    bookingActivity: { _id: string, count: number }[];
+    userRegistration: { _id: string, count: number }[];
+    facilityApproval: { _id: string, count: number }[];
+    mostActiveSports: { _id: string, count: number }[];
+    earningsSimulation: { month: string, earnings: number }[];
+}
 
 export default function AdminDashboard() {
   const { token } = useAuth();
   const [adminKpis, setAdminKpis] = useState<AdminKpis | null>(null);
   const [pendingFacilities, setPendingFacilities] = useState<PendingFacility[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [chartData, setChartData] = useState<ChartData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("")
@@ -59,6 +68,7 @@ export default function AdminDashboard() {
       setAdminKpis(data.adminKpis);
       setPendingFacilities(data.pendingFacilities);
       setUsers(data.users);
+      setChartData(data.charts);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -117,6 +127,14 @@ export default function AdminDashboard() {
   if (loading) return <div className="text-center p-10">Loading Admin Dashboard...</div>
   if (error) return <div className="text-center p-10 text-red-500">Error: {error}</div>
 
+  const formatMonth = (dateStr: string) => {
+    const [year, month] = dateStr.split('-');
+    const date = new Date(parseInt(year), parseInt(month) - 1);
+    return date.toLocaleString('default', { month: 'short' });
+  };
+
+  const earningsSimulationData = chartData?.earningsSimulation.map(d => ({...d, month: formatMonth(d.month)}));
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4">
@@ -142,6 +160,84 @@ export default function AdminDashboard() {
                 </Card>
             </div>
         )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <Card>
+                <CardHeader><CardTitle>Booking Activity Over Time</CardTitle></CardHeader>
+                <CardContent>
+                    <ResponsiveContainer width="100%" height={300}>
+                        <LineChart data={chartData?.bookingActivity}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="_id" />
+                            <YAxis />
+                            <Tooltip />
+                            <Legend />
+                            <Line type="monotone" dataKey="count" stroke="#8884d8" />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader><CardTitle>User Registration Trends</CardTitle></CardHeader>
+                <CardContent>
+                    <ResponsiveContainer width="100%" height={300}>
+                        <LineChart data={chartData?.userRegistration}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="_id" />
+                            <YAxis />
+                            <Tooltip />
+                            <Legend />
+                            <Line type="monotone" dataKey="count" stroke="#82ca9d" />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader><CardTitle>Facility Approval Trend</CardTitle></CardHeader>
+                <CardContent>
+                    <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={chartData?.facilityApproval}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="_id" />
+                            <YAxis />
+                            <Tooltip />
+                            <Legend />
+                            <Bar dataKey="count" fill="#ffc658" />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader><CardTitle>Most Active Sports</CardTitle></CardHeader>
+                <CardContent>
+                    <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={chartData?.mostActiveSports}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="_id" />
+                            <YAxis />
+                            <Tooltip />
+                            <Legend />
+                            <Bar dataKey="count" fill="#ff8042" />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </CardContent>
+            </Card>
+            <Card className="lg:col-span-2">
+                <CardHeader><CardTitle>Earnings Simulation Chart</CardTitle></CardHeader>
+                <CardContent>
+                    <ResponsiveContainer width="100%" height={300}>
+                        <LineChart data={earningsSimulationData}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="month" />
+                            <YAxis />
+                            <Tooltip />
+                            <Legend />
+                            <Line type="monotone" dataKey="earnings" stroke="#8884d8" />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </CardContent>
+            </Card>
+        </div>
 
         <Card className="mb-8">
           <CardHeader>

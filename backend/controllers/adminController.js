@@ -16,6 +16,47 @@ exports.getAdminDashboard = async (req, res) => {
     
     const users = await User.find().select('-password');
 
+    // Chart Data
+    const bookingActivity = await Booking.aggregate([
+      { $group: { _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }, count: { $sum: 1 } } },
+      { $sort: { _id: 1 } }
+    ]);
+
+    const userRegistration = await User.aggregate([
+      { $group: { _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }, count: { $sum: 1 } } },
+      { $sort: { _id: 1 } }
+    ]);
+
+    const facilityApproval = await Venue.aggregate([
+      { $group: { _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }, count: { $sum: 1 } } },
+      { $sort: { _id: 1 } }
+    ]);
+
+    const mostActiveSports = await Venue.aggregate([
+      { $group: { _id: "$sport", count: { $sum: 1 } } }
+    ]);
+    
+    // Dynamic Earnings Simulation
+    const earningsData = await Booking.aggregate([
+        {
+            $match: {
+                status: { $in: ['confirmed', 'completed'] }
+            }
+        },
+        {
+            $group: {
+                _id: { $dateToString: { format: "%Y-%m", date: "$date" } },
+                totalEarnings: { $sum: "$totalPrice" }
+            }
+        },
+        { $sort: { _id: 1 } }
+    ]);
+
+    const earningsSimulation = earningsData.map(item => ({
+        month: item._id,
+        earnings: item.totalEarnings
+    }));
+
     res.status(200).json({
       success: true,
       data: {
@@ -31,7 +72,14 @@ exports.getAdminDashboard = async (req, res) => {
             status: f.status,
             pendingUpdates: f.pendingUpdates
         })),
-        users
+        users,
+        charts: {
+            bookingActivity,
+            userRegistration,
+            facilityApproval,
+            mostActiveSports,
+            earningsSimulation,
+        }
       }
     });
   } catch (error) {
