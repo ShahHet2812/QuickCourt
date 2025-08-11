@@ -227,8 +227,45 @@ export default function HomePage() {
               </div>
             </div>
           ))}
+          
+          {/* Carousel Controls */}
+          <button
+            onClick={prevSlide}
+            className="absolute top-1/2 left-4 -translate-y-1/2 z-10 p-2 bg-black/30 text-white rounded-full hover:bg-black/50 transition-colors"
+            aria-label="Previous Slide"
+          >
+            <ChevronLeft size={24} />
+          </button>
+          <button
+            onClick={nextSlide}
+            className="absolute top-1/2 right-4 -translate-y-1/2 z-10 p-2 bg-black/30 text-white rounded-full hover:bg-black/50 transition-colors"
+            aria-label="Next Slide"
+          >
+            <ChevronRight size={24} />
+          </button>
+
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex items-center space-x-3">
+            <button 
+              onClick={togglePlayPause} 
+              className="p-2 bg-black/30 text-white rounded-full hover:bg-black/50 transition-colors"
+              aria-label={isPlaying ? "Pause Slideshow" : "Play Slideshow"}
+            >
+              {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+            </button>
+            <div className="flex space-x-2">
+              {heroImages.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => goToSlide(index)}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    currentSlide === index ? 'bg-white w-4' : 'bg-white/50 hover:bg-white/75'
+                  }`}
+                  aria-label={`Go to slide ${index + 1}`}
+                />
+              ))}
+            </div>
+          </div>
         </div>
-        {/* Navigation and Indicators */}
       </section>
 
       {/* Popular Venues Section */}

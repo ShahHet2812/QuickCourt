@@ -50,11 +50,15 @@ export default function OwnerDashboard() {
       }
 
       try {
+        setLoading(true);
         const res = await fetch('http://localhost:5000/api/owner/dashboard', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
-        if (!res.ok) throw new Error('Failed to fetch dashboard data');
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.error || 'Failed to fetch dashboard data');
+        }
         
         const { data } = await res.json();
         setKpiData(data.kpiData);

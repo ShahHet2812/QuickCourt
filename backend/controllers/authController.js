@@ -44,6 +44,12 @@ exports.login = async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({ success: false, error: 'Invalid credentials' });
     }
+
+    // Add this check: if user is an admin, bypass the banned status check
+    if (user.userType !== 'admin' && user.status === 'banned') {
+      return res.status(403).json({ success: false, error: 'Your account has been banned. Please contact support.' });
+    }
+
     sendTokenResponse(user, 200, res);
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });

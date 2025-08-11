@@ -111,6 +111,12 @@ exports.toggleUserBan = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+    // Add this check: prevent banning admin users
+    if (user.userType === 'admin') {
+      return res.status(403).json({ success: false, error: 'Admin accounts cannot be banned.' });
+    }
+
     user.status = user.status === 'active' ? 'banned' : 'active';
     await user.save();
     res.status(200).json({ success: true, data: user });
