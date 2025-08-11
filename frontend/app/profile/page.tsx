@@ -1,8 +1,7 @@
 "use client"
 
 import type React from "react"
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { ArrowLeft, User, Mail, MapPin, Calendar, Camera, Save } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -11,44 +10,99 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useAuth } from "@/context/AuthContext"
 
 export default function ProfilePage() {
-  const [isEditing, setIsEditing] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
+  const { user, token, login } = useAuth();
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [profileData, setProfileData] = useState({
-    firstName: "John",
-    lastName: "Doe",
-    email: "john.doe@example.com",
-    phone: "+1 (555) 123-4567",
-    bio: "Sports enthusiast who loves playing badminton and tennis. Regular player at local courts.",
-    address: "123 Main Street",
-    city: "New York",
-    state: "NY",
-    zipCode: "10001",
-    joinDate: "January 2024",
-    avatar: "/placeholder.svg?height=100&width=100",
-  })
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    bio: "",
+    address: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    joinDate: "",
+    avatar: "",
+  });
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      setProfileData({
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        email: user.email || "",
+        phone: user.phone || "",
+        bio: user.bio || "Sports enthusiast.",
+        address: user.address || "",
+        city: user.city || "",
+        state: user.state || "",
+        zipCode: user.zipCode || "",
+        joinDate: new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) || "",
+        avatar: user.avatar ? `http://localhost:5000${user.avatar}` : "",
+      });
+    }
+  }, [user]);
 
   const handleInputChange = (field: string, value: string) => {
     setProfileData((prev) => ({ ...prev, [field]: value }))
   }
 
   const handleSave = async () => {
-    setIsSaving(true)
+    setIsSaving(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-      setIsEditing(false)
+      const dataToUpdate = new FormData();
+      
+      // Append all fields to the FormData object
+      dataToUpdate.append('firstName', profileData.firstName);
+      dataToUpdate.append('lastName', profileData.lastName);
+      dataToUpdate.append('phone', profileData.phone);
+      dataToUpdate.append('bio', profileData.bio);
+      dataToUpdate.append('address', profileData.address);
+      dataToUpdate.append('city', profileData.city);
+      dataToUpdate.append('state', profileData.state);
+      dataToUpdate.append('zipCode', profileData.zipCode);
+      
+      if (avatarFile) {
+        dataToUpdate.append('avatar', avatarFile);
+      }
+
+      const res = await fetch('http://localhost:5000/api/users/profile', {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: dataToUpdate,
+      });
+
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to update profile');
+      }
+
+      // Update the user in the global context with the new data from the server
+      if (token) {
+        login({ user: data.data, token });
+      }
+      
+      setIsEditing(false);
     } catch (error) {
-      console.error("Error saving profile:", error)
+      console.error("Error saving profile:", error);
+      // You can add an error state here to show a message to the user
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
   }
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      setAvatarFile(file);
       const reader = new FileReader()
       reader.onload = (e) => {
         if (e.target?.result) {
@@ -57,6 +111,10 @@ export default function ProfilePage() {
       }
       reader.readAsDataURL(file)
     }
+  }
+
+  if (!user) {
+    return <div>Loading profile...</div>; // Or a redirect to login
   }
 
   return (
@@ -107,10 +165,10 @@ export default function ProfilePage() {
               <CardContent className="text-center p-6">
                 <div className="relative inline-block mb-4">
                   <Avatar className="w-24 h-24">
-                    <AvatarImage src={profileData.avatar || "/placeholder.svg"} alt="Profile" />
+                    <AvatarImage src={profileData.avatar} alt="Profile" />
                     <AvatarFallback className="text-2xl">
-                      {profileData.firstName[0]}
-                      {profileData.lastName[0]}
+                      {profileData.firstName && profileData.firstName[0]}
+                      {profileData.lastName && profileData.lastName[0]}
                     </AvatarFallback>
                   </Avatar>
                   {isEditing && (
@@ -142,7 +200,7 @@ export default function ProfilePage() {
               </CardContent>
             </Card>
 
-            {/* Quick Stats */}
+            {/* Quick Stats (Static for now) */}
             <Card className="mt-6">
               <CardHeader>
                 <CardTitle className="text-lg">Activity Stats</CardTitle>
@@ -166,12 +224,10 @@ export default function ProfilePage() {
 
           {/* Profile Details */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Personal Information */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
-                  <User className="w-5 h-5 mr-2" />
-                  Personal Information
+                  <User className="w-5 h-5 mr-2" /> Personal Information
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -195,7 +251,6 @@ export default function ProfilePage() {
                     />
                   </div>
                 </div>
-
                 <div>
                   <Label htmlFor="bio">Bio</Label>
                   <Textarea
@@ -210,26 +265,17 @@ export default function ProfilePage() {
               </CardContent>
             </Card>
 
-            {/* Contact Information */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
-                  <Mail className="w-5 h-5 mr-2" />
-                  Contact Information
+                  <Mail className="w-5 h-5 mr-2" /> Contact Information
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
                   <Label htmlFor="email">Email Address</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={profileData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
-                    disabled={!isEditing}
-                  />
+                  <Input id="email" type="email" value={profileData.email} disabled />
                 </div>
-
                 <div>
                   <Label htmlFor="phone">Phone Number</Label>
                   <Input
@@ -239,57 +285,6 @@ export default function ProfilePage() {
                     onChange={(e) => handleInputChange("phone", e.target.value)}
                     disabled={!isEditing}
                   />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Address Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <MapPin className="w-5 h-5 mr-2" />
-                  Address Information
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="address">Street Address</Label>
-                  <Input
-                    id="address"
-                    value={profileData.address}
-                    onChange={(e) => handleInputChange("address", e.target.value)}
-                    disabled={!isEditing}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="city">City</Label>
-                    <Input
-                      id="city"
-                      value={profileData.city}
-                      onChange={(e) => handleInputChange("city", e.target.value)}
-                      disabled={!isEditing}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="state">State</Label>
-                    <Input
-                      id="state"
-                      value={profileData.state}
-                      onChange={(e) => handleInputChange("state", e.target.value)}
-                      disabled={!isEditing}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="zipCode">ZIP Code</Label>
-                    <Input
-                      id="zipCode"
-                      value={profileData.zipCode}
-                      onChange={(e) => handleInputChange("zipCode", e.target.value)}
-                      disabled={!isEditing}
-                    />
-                  </div>
                 </div>
               </CardContent>
             </Card>

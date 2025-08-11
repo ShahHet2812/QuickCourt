@@ -1,5 +1,6 @@
 const User = require('../models/User');
 
+// ... (signup and login functions remain the same)
 // @desc    Register user
 // @route   POST /api/auth/signup
 exports.signup = async (req, res) => {
@@ -8,7 +9,6 @@ exports.signup = async (req, res) => {
     
     let avatarPath = '';
     if (req.file) {
-      // Create a server-accessible path for the avatar
       avatarPath = `/uploads/avatars/${req.file.filename}`;
     }
 
@@ -22,7 +22,7 @@ exports.signup = async (req, res) => {
       avatar: avatarPath 
     });
 
-    sendTokenResponse(user, 200, res);
+    sendTokenResponse(user, 201, res);
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });
   }
@@ -50,8 +50,30 @@ exports.login = async (req, res) => {
   }
 };
 
-// Get token from model, create cookie and send response
+// Get token from model and send response with user data
 const sendTokenResponse = (user, statusCode, res) => {
   const token = user.getSignedJwtToken();
-  res.status(statusCode).json({ success: true, token });
+  
+  // Create a user object without the password
+  const userResponse = {
+    _id: user._id,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    phone: user.phone, // Add this line
+    userType: user.userType,
+    avatar: user.avatar,
+    bio: user.bio,
+    address: user.address,
+    city: user.city,
+    state: user.state,
+    zipCode: user.zipCode,
+    createdAt: user.createdAt
+  };
+
+  res.status(statusCode).json({ 
+    success: true, 
+    token,
+    user: userResponse 
+  });
 };
