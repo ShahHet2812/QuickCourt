@@ -133,6 +133,11 @@ exports.login = async (req, res) => {
     if (!user) {
       return res.status(401).json({ success: false, error: 'Invalid credentials' });
     }
+
+    if (!user.isVerified) {
+      return res.status(401).json({ success: false, error: 'Please verify your email to login.' });
+    }
+
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
       return res.status(401).json({ success: false, error: 'Invalid credentials' });
@@ -147,6 +152,75 @@ exports.login = async (req, res) => {
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });
   }
+};
+
+// @desc    Forgot password
+// @route   POST /api/auth/forgotpassword
+exports.forgotPassword = async (req, res) => {
+    const { email } = req.body;
+
+    try {
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ success: false, error: 'User not found' });
+        }
+
+        // Create reset token
+        const resetToken = Math.floor(100000 + Math.random() * 900000).toString();
+        user.verificationCode = resetToken;
+        user.verificationCodeExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+        await user.save();
+
+        // Send email
+        try {
+            await sendEmail({
+                email: user.email,
+                subject: 'Password Reset Token',
+                message: `Your password reset token is: ${resetToken}`
+            });
+
+            res.status(200).json({ success: true, data: 'Email sent' });
+        } catch (error) {
+            console.error(error);
+            user.verificationCode = undefined;
+            user.verificationCodeExpires = undefined;
+            await user.save();
+            return res.status(500).json({ success: false, error: 'Email could not be sent' });
+        }
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+};
+
+
+// @desc    Reset password
+// @route   POST /api/auth/resetpassword
+exports.resetPassword = async (req, res) => {
+    const { email, code, password } = req.body;
+
+    try {
+        const user = await User.findOne({
+            email,
+            verificationCode: code,
+            verificationCodeExpires: { $gt: Date.now() }
+        });
+
+        if (!user) {
+            return res.status(400).json({ success: false, error: 'Invalid token' });
+        }
+
+        // Set new password
+        user.password = password;
+        user.verificationCode = undefined;
+        user.verificationCodeExpires = undefined;
+        await user.save();
+
+        sendTokenResponse(user, 200, res);
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
 };
 
 // Get token from model and send response with user data

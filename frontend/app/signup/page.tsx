@@ -119,7 +119,7 @@ export default function SignupPage() {
   }
 
   // Handle form submission
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     setErrors({});
@@ -155,7 +155,7 @@ export default function SignupPage() {
       }
 
       console.log('Signup successful', result);
-      router.push('/login');
+      router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
     } catch (error: any) {
         if (error.message.includes('E11000 duplicate key error')) {
             setErrors({ email: "This email is already registered" });
