@@ -12,34 +12,20 @@ const venueData = {
   name: "SportZone Arena",
   location: "Downtown, City Center",
   sport: "Badminton",
-  pricePerHour: 50,
+  pricePerHour: 1500,
 }
 
 const courts = [
-  { id: 1, name: "Court 1", type: "Premium", price: 60 },
-  { id: 2, name: "Court 2", type: "Premium", price: 60 },
-  { id: 3, name: "Court 3", type: "Standard", price: 50 },
-  { id: 4, name: "Court 4", type: "Standard", price: 50 },
+  { id: 1, name: "Court 1", type: "Premium", price: 1800 },
+  { id: 2, name: "Court 2", type: "Premium", price: 1800 },
+  { id: 3, name: "Court 3", type: "Standard", price: 1500 },
+  { id: 4, name: "Court 4", type: "Standard", price: 1500 },
 ]
 
 const timeSlots = [
-  "06:00",
-  "07:00",
-  "08:00",
-  "09:00",
-  "10:00",
-  "11:00",
-  "12:00",
-  "13:00",
-  "14:00",
-  "15:00",
-  "16:00",
-  "17:00",
-  "18:00",
-  "19:00",
-  "20:00",
-  "21:00",
-  "22:00",
+  "06:00 AM", "07:00 AM", "08:00 AM", "09:00 AM", "10:00 AM", "11:00 AM",
+  "12:00 PM", "01:00 PM", "02:00 PM", "03:00 PM", "04:00 PM", "05:00 PM",
+  "06:00 PM", "07:00 PM", "08:00 PM", "09:00 PM", "10:00 PM",
 ]
 
 export default function BookingPage() {
@@ -96,7 +82,7 @@ export default function BookingPage() {
               <p className="text-sm text-gray-600">Court: {selectedCourtData?.name}</p>
               <p className="text-sm text-gray-600">Date: {selectedDate}</p>
               <p className="text-sm text-gray-600">Time: {selectedTimeSlots.join(", ")}</p>
-              <p className="text-sm text-gray-600">Total: ${total.toFixed(2)}</p>
+              <p className="text-sm text-gray-600">Total: ₹{total.toFixed(2)}</p>
             </div>
             <div className="space-y-2">
               <Button className="w-full bg-green-600 hover:bg-green-700">View My Bookings</Button>
@@ -178,7 +164,7 @@ export default function BookingPage() {
                                 {court.type}
                               </span>
                             </div>
-                            <p className="text-lg font-bold text-green-600">${court.price}/hour</p>
+                            <p className="text-lg font-bold text-green-600">₹{court.price}/hour</p>
                           </div>
                         ))}
                       </div>
@@ -209,8 +195,8 @@ export default function BookingPage() {
                             onClick={() => handleTimeSlotToggle(timeSlot)}
                             className={`p-3 text-sm font-medium rounded-lg border-2 transition-all ${
                               selectedTimeSlots.includes(timeSlot)
-                                ? "border-green-600 bg-green-600 text-white"
-                                : "border-gray-200 hover:border-gray-300 text-gray-700"
+                                ? "bg-green-700 border-green-700 text-white"
+                                : "border-gray-200 hover:border-green-500 hover:bg-green-100 text-gray-700"
                             }`}
                           >
                             {timeSlot}
@@ -362,15 +348,15 @@ export default function BookingPage() {
                   <div className="border-t pt-4 space-y-2">
                     <div className="flex justify-between">
                       <span>Subtotal:</span>
-                      <span>${subtotal.toFixed(2)}</span>
+                      <span>₹{subtotal.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Tax (10%):</span>
-                      <span>${tax.toFixed(2)}</span>
+                      <span>₹{tax.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between font-bold text-lg border-t pt-2">
                       <span>Total:</span>
-                      <span className="text-green-600">${total.toFixed(2)}</span>
+                      <span className="text-green-600">₹{total.toFixed(2)}</span>
                     </div>
                   </div>
                 )}

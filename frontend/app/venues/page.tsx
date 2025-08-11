@@ -14,8 +14,8 @@ const venues = [
   {
     id: 1,
     name: "SportZone Arena",
-    location: "Downtown, City Center",
-    price: 50,
+    location: "Satellite, Ahmedabad",
+    price: 1500,
     rating: 4.8,
     reviews: 124,
     image: "/sports-arena-badminton.png",
@@ -25,8 +25,8 @@ const venues = [
   {
     id: 2,
     name: "Elite Tennis Club",
-    location: "Uptown, North District",
-    price: 75,
+    location: "Bodakdev, Ahmedabad",
+    price: 1800,
     rating: 4.9,
     reviews: 89,
     image: "/tennis-club-court.png",
@@ -36,8 +36,8 @@ const venues = [
   {
     id: 3,
     name: "Green Field Complex",
-    location: "Suburbs, East Side",
-    price: 100,
+    location: "Maninagar, Ahmedabad",
+    price: 2000,
     rating: 4.7,
     reviews: 156,
     image: "/football-field-turf.png",
@@ -47,8 +47,8 @@ const venues = [
   {
     id: 4,
     name: "City Sports Hub",
-    location: "Central Park Area",
-    price: 60,
+    location: "Navrangpura, Ahmedabad",
+    price: 1600,
     rating: 4.6,
     reviews: 203,
     image: "/sports-hub-basketball.png",
@@ -58,58 +58,178 @@ const venues = [
   {
     id: 5,
     name: "Ace Badminton Center",
-    location: "West End, Mall District",
-    price: 45,
+    location: "Vastrapur, Ahmedabad",
+    price: 1400,
     rating: 4.5,
     reviews: 78,
-    image: "/placeholder.svg?height=200&width=300",
+    image: "/modern-badminton-court.png",
     sport: "Badminton",
     amenities: ["Multiple Courts", "Equipment Rental", "Parking"],
   },
   {
     id: 6,
     name: "Premier Tennis Courts",
-    location: "South Bay, Residential",
-    price: 80,
+    location: "Prahlad Nagar, Ahmedabad",
+    price: 1900,
     rating: 4.8,
     reviews: 92,
-    image: "/placeholder.svg?height=200&width=300",
+    image: "/outdoor-tennis-court.png",
     sport: "Tennis",
     amenities: ["Clay Courts", "Lighting", "Pro Shop"],
   },
-  // Cricket venues
   {
     id: 7,
-    name: "Royal Cricket Arena",
-    location: "Old Town, West Block",
-    price: 65,
-    rating: 4.6,
-    reviews: 81,
-    image: "/placeholder.jpg",
-    sport: "Cricket",
-    amenities: ["Practice Nets", "Parking", "Scoreboard"],
+    name: "Shuttle Smash Badminton",
+    location: "Ghatlodia, Ahmedabad",
+    price: 1200,
+    rating: 4.7,
+    reviews: 150,
+    image: "/sports-arena-badminton.png",
+    sport: "Badminton",
+    amenities: ["Parking", "AC", "Changing Room"],
   },
   {
     id: 8,
-    name: "Green Pitch Grounds",
-    location: "Lakeside, South Park",
-    price: 55,
-    rating: 4.5,
-    reviews: 64,
-    image: "/placeholder.jpg",
-    sport: "Cricket",
-    amenities: ["Floodlights", "Changing Rooms", "Cafeteria"],
+    name: "Grand Slam Tennis",
+    location: "Thaltej, Ahmedabad",
+    price: 1700,
+    rating: 4.8,
+    reviews: 110,
+    image: "/tennis-club-court.png",
+    sport: "Tennis",
+    amenities: ["Parking", "Pro Shop", "Coaching"],
   },
   {
     id: 9,
-    name: "Metro Cricket Complex",
-    location: "Metro Center, Block A",
-    price: 70,
+    name: "City Kickers Football",
+    location: "Bopal, Ahmedabad",
+    price: 1950,
+    rating: 4.6,
+    reviews: 180,
+    image: "/football-field-turf.png",
+    sport: "Football",
+    amenities: ["Floodlights", "Parking", "Cafeteria"],
+  },
+  {
+    id: 10,
+    name: "Dunk City Basketball",
+    location: "Chandkheda, Ahmedabad",
+    price: 1550,
+    rating: 4.5,
+    reviews: 220,
+    image: "/sports-hub-basketball.png",
+    sport: "Basketball",
+    amenities: ["Indoor", "AC", "Scoreboard"],
+  },
+  {
+    id: 11,
+    name: "Rally Point Badminton",
+    location: "Nikol, Ahmedabad",
+    price: 1100,
+    rating: 4.4,
+    reviews: 95,
+    image: "/modern-badminton-court.png",
+    sport: "Badminton",
+    amenities: ["Multiple Courts", "Equipment Rental", "Parking"],
+  },
+  {
+    id: 12,
+    name: "Top Spin Tennis",
+    location: "Vejalpur, Ahmedabad",
+    price: 1850,
+    rating: 4.9,
+    reviews: 105,
+    image: "/outdoor-tennis-court.png",
+    sport: "Tennis",
+    amenities: ["Clay Courts", "Lighting", "Pro Shop"],
+  },
+  {
+    id: 13,
+    name: "South Ahmedabad Badminton Club",
+    location: "Isanpur, Ahmedabad",
+    price: 1300,
+    rating: 4.3,
+    reviews: 115,
+    image: "/sports-arena-badminton.png",
+    sport: "Badminton",
+    amenities: ["Parking", "AC", "Changing Room"],
+  },
+  {
+    id: 14,
+    name: "West Ahmedabad Tennis Club",
+    location: "Paldi, Ahmedabad",
+    price: 1750,
     rating: 4.7,
-    reviews: 102,
-    image: "/placeholder.jpg",
-    sport: "Cricket",
-    amenities: ["Multiple Pitches", "Equipment Rental", "Parking"],
+    reviews: 95,
+    image: "/tennis-club-court.png",
+    sport: "Tennis",
+    amenities: ["Parking", "Pro Shop", "Coaching"],
+  },
+  {
+    id: 15,
+    name: "East Ahmedabad Football Club",
+    location: "Odhav, Ahmedabad",
+    price: 1980,
+    rating: 4.5,
+    reviews: 165,
+    image: "/football-field-turf.png",
+    sport: "Football",
+    amenities: ["Floodlights", "Parking", "Cafeteria"],
+  },
+  {
+    id: 16,
+    name: "North Ahmedabad Basketball Arena",
+    location: "Sabarmati, Ahmedabad",
+    price: 1650,
+    rating: 4.4,
+    reviews: 240,
+    image: "/sports-hub-basketball.png",
+    sport: "Basketball",
+    amenities: ["Indoor", "AC", "Scoreboard"],
+  },
+  {
+    id: 17,
+    name: "Boxy Sports Arena",
+    location: "Motera, Ahmedabad",
+    price: 1200,
+    rating: 4.9,
+    reviews: 250,
+    image: "/cricketbox.jpg",
+    sport: "Box Cricket",
+    amenities: ["Floodlights", "Parking", "Pavilion"],
+  },
+  {
+    id: 18,
+    name: "Urban Box Cricket",
+    location: "Navrangpura, Ahmedabad",
+    price: 1400,
+    rating: 4.8,
+    reviews: 180,
+    image: "/cricketbox.jpg",
+    sport: "Box Cricket",
+    amenities: ["Practice Nets", "Parking", "Cafe"],
+  },
+  {
+    id: 19,
+    name: "Rooftop Box Cricket",
+    location: "Ellis Bridge, Ahmedabad",
+    price: 1000,
+    rating: 4.7,
+    reviews: 150,
+    image: "/cricketbox.jpg",
+    sport: "Box Cricket",
+    amenities: ["Matting Pitch", "Parking", "Toilets"],
+  },
+  {
+    id: 20,
+    name: "City Box Cricket",
+    location: "Motera, Ahmedabad",
+    price: 1500,
+    rating: 5.0,
+    reviews: 500,
+    image: "/cricketbox.jpg",
+    sport: "Box Cricket",
+    amenities: ["International Standard", "Parking", "Food Court"],
   },
 ]
 
@@ -135,17 +255,12 @@ export default function VenuesPage() {
     const matchesSearch =
       venue.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       venue.location.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    // Fix case sensitivity issue - normalize both sides to lowercase
-    const venueSportLower = venue.sport.toLowerCase()
-    const sportFilterLower = sportFilter.toLowerCase()
-    const matchesSport = sportFilter === "all" || venueSportLower === sportFilterLower
-    
+    const matchesSport = sportFilter === "all" || venue.sport.toLowerCase() === sportFilter.toLowerCase()
     const matchesPrice =
       priceFilter === "all" ||
-      (priceFilter === "low" && venue.price < 60) ||
-      (priceFilter === "medium" && venue.price >= 60 && venue.price < 80) ||
-      (priceFilter === "high" && venue.price >= 80)
+      (priceFilter === "low" && venue.price < 1500) ||
+      (priceFilter === "medium" && venue.price >= 1500 && venue.price < 1800) ||
+      (priceFilter === "high" && venue.price >= 1800)
     const matchesRating = ratingFilter === "all" || venue.rating >= Number.parseFloat(ratingFilter)
 
     return matchesSearch && matchesSport && matchesPrice && matchesRating
@@ -180,49 +295,19 @@ export default function VenuesPage() {
 
             {/* Filters */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-              <div className="flex gap-2">
-                <Select
-                  value={sportFilter}
-                  onValueChange={(value) => {
-                    setSportFilter(value)
-                    const params = new URLSearchParams(searchParams.toString())
-                    if (value === "all") {
-                      params.delete("sport")
-                    } else {
-                      params.set("sport", value)
-                    }
-                    const query = params.toString()
-                    router.push(query ? `${pathname}?${query}` : pathname)
-                  }}
-                >
-                  <SelectTrigger className="w-full sm:w-40 h-12 rounded-xl">
-                    <SelectValue placeholder="Sport Type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">🏟️ All Sports</SelectItem>
-                  <SelectItem value="badminton">🏸 Badminton</SelectItem>
-                  <SelectItem value="tennis">🎾 Tennis</SelectItem>
-                  <SelectItem value="football">⚽ Football</SelectItem>
-                  <SelectItem value="basketball">🏀 Basketball</SelectItem>
-                    <SelectItem value="cricket">🏏 Cricket</SelectItem>
-                  </SelectContent>
-                </Select>
-                {sportFilter !== "all" && (
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setSportFilter("all")
-                      const params = new URLSearchParams(searchParams.toString())
-                      params.delete("sport")
-                      const query = params.toString()
-                      router.push(query ? `${pathname}?${query}` : pathname)
-                    }}
-                    className="h-12 px-4 text-sm"
-                  >
-                    Clear Filter
-                  </Button>
-                )}
-              </div>
+              <Select value={sportFilter} onValueChange={setSportFilter}>
+                <SelectTrigger className="w-full sm:w-40 h-12 rounded-xl">
+                  <SelectValue placeholder="Sport Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Sports</SelectItem>
+                  <SelectItem value="badminton">Badminton</SelectItem>
+                  <SelectItem value="tennis">Tennis</SelectItem>
+                  <SelectItem value="football">Football</SelectItem>
+                  <SelectItem value="basketball">Basketball</SelectItem>
+                  <SelectItem value="box cricket">Box Cricket</SelectItem>
+                </SelectContent>
+              </Select>
 
               <Select value={priceFilter} onValueChange={setPriceFilter}>
                 <SelectTrigger className="w-full sm:w-40 h-12 rounded-xl">
@@ -230,9 +315,9 @@ export default function VenuesPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Prices</SelectItem>
-                  <SelectItem value="low">Under $60</SelectItem>
-                  <SelectItem value="medium">$60 - $80</SelectItem>
-                  <SelectItem value="high">$80+</SelectItem>
+                  <SelectItem value="low">Under ₹1500</SelectItem>
+                  <SelectItem value="medium">₹1500 - ₹1800</SelectItem>
+                  <SelectItem value="high">₹1800+</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -279,7 +364,7 @@ export default function VenuesPage() {
                     {venue.sport}
                   </div>
                   <div className="absolute top-3 left-3 bg-green-600 text-white px-2 py-1 rounded-full text-sm font-bold">
-                    ${venue.price}/hr
+                    ₹{venue.price}/hr
                   </div>
                 </div>
                 <div className="p-4">
