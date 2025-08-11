@@ -1,80 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Calendar, MapPin, X, Filter } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Link from "next/link"
-
-const bookings = [
-  {
-    id: 1,
-    venueName: "SportZone Arena",
-    courtName: "Court 1",
-    sport: "Badminton",
-    date: "2024-01-15",
-    time: "18:00 - 20:00",
-    duration: 2,
-    price: 120,
-    status: "confirmed",
-    location: "Downtown, City Center",
-    bookingDate: "2024-01-10",
-  },
-  {
-    id: 2,
-    venueName: "Elite Tennis Club",
-    courtName: "Court A",
-    sport: "Tennis",
-    date: "2024-01-18",
-    time: "16:00 - 17:00",
-    duration: 1,
-    price: 75,
-    status: "confirmed",
-    location: "Uptown, North District",
-    bookingDate: "2024-01-12",
-  },
-  {
-    id: 3,
-    venueName: "Green Field Complex",
-    courtName: "Field 1",
-    sport: "Football",
-    date: "2024-01-20",
-    time: "19:00 - 21:00",
-    duration: 2,
-    price: 200,
-    status: "pending",
-    location: "Suburbs, East Side",
-    bookingDate: "2024-01-13",
-  },
-  {
-    id: 4,
-    venueName: "City Sports Hub",
-    courtName: "Court 3",
-    sport: "Basketball",
-    date: "2024-01-12",
-    time: "14:00 - 15:00",
-    duration: 1,
-    price: 60,
-    status: "completed",
-    location: "Central Park Area",
-    bookingDate: "2024-01-08",
-  },
-  {
-    id: 5,
-    venueName: "SportZone Arena",
-    courtName: "Court 2",
-    sport: "Badminton",
-    date: "2024-01-10",
-    time: "20:00 - 21:00",
-    duration: 1,
-    price: 60,
-    status: "cancelled",
-    location: "Downtown, City Center",
-    bookingDate: "2024-01-05",
-  },
-]
+import { useAuth } from "@/context/AuthContext"
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -92,19 +25,62 @@ const getStatusColor = (status: string) => {
 }
 
 export default function UserDashboard() {
+  const { user, token } = useAuth();
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState("all")
   const [sportFilter, setSportFilter] = useState("all")
 
+  useEffect(() => {
+    const fetchBookings = async () => {
+      if (!token) return;
+      try {
+        setLoading(true);
+        const res = await fetch('http://localhost:5000/api/bookings/mybookings', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const data = await res.json();
+        if (!data.success) {
+          throw new Error(data.error);
+        }
+        setBookings(data.data);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBookings();
+  }, [token]);
+
   const filteredBookings = bookings.filter((booking) => {
     const matchesStatus = statusFilter === "all" || booking.status === statusFilter
-    const matchesSport = sportFilter === "all" || booking.sport.toLowerCase() === sportFilter
+    const matchesSport = sportFilter === "all" || booking.venue?.sport.toLowerCase() === sportFilter
     return matchesStatus && matchesSport
   })
 
-  const handleCancelBooking = (bookingId: number) => {
-    // In a real app, this would make an API call
-    console.log(`Cancelling booking ${bookingId}`)
-  }
+  const handleCancelBooking = async (bookingId: string) => {
+    if (!window.confirm("Are you sure you want to cancel this booking?")) return;
+
+    try {
+        const res = await fetch(`http://localhost:5000/api/bookings/${bookingId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            throw new Error(data.error || 'Failed to cancel booking');
+        }
+        setBookings(bookings.filter(b => b._id !== bookingId));
+    } catch (err: any) {
+        alert("Failed to cancel booking: " + err.message);
+    }
+  };
 
   const stats = {
     total: bookings.length,
@@ -112,6 +88,9 @@ export default function UserDashboard() {
     completed: bookings.filter((b) => b.status === "completed").length,
     cancelled: bookings.filter((b) => b.status === "cancelled").length,
   }
+  
+  if (loading) return <div>Loading bookings...</div>
+  if (error) return <div>Error: {error}</div>
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -211,18 +190,18 @@ export default function UserDashboard() {
             </Card>
           ) : (
             filteredBookings.map((booking) => (
-              <Card key={booking.id} className="hover:shadow-md transition-shadow">
+              <Card key={booking._id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-4 sm:p-6">
                   <div className="flex flex-col gap-4">
                     <div className="flex-1">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1 min-w-0">
                           <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-1 truncate">
-                            {booking.venueName}
+                            {booking.venue.name}
                           </h3>
                           <div className="flex items-center text-gray-600 mb-2">
                             <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
-                            <span className="text-sm truncate">{booking.location}</span>
+                            <span className="text-sm truncate">{booking.venue.location}</span>
                           </div>
                         </div>
                         <Badge className={`${getStatusColor(booking.status)} ml-2 flex-shrink-0`}>
@@ -234,18 +213,18 @@ export default function UserDashboard() {
                         <div>
                           <span className="font-medium text-gray-700">Court:</span>
                           <p className="text-gray-600">
-                            {booking.courtName} ({booking.sport})
+                            {booking.court} ({booking.venue.sport})
                           </p>
                         </div>
                         <div>
                           <span className="font-medium text-gray-700">Date & Time:</span>
-                          <p className="text-gray-600">{booking.date}</p>
-                          <p className="text-gray-600">{booking.time}</p>
+                          <p className="text-gray-600">{new Date(booking.date).toLocaleDateString()}</p>
+                          <p className="text-gray-600">{booking.timeSlots.join(', ')}</p>
                         </div>
                         <div>
                           <span className="font-medium text-gray-700">Duration & Price:</span>
-                          <p className="text-gray-600">{booking.duration} hour(s)</p>
-                          <p className="text-green-600 font-semibold">${booking.price}</p>
+                          <p className="text-gray-600">{booking.timeSlots.length} hour(s)</p>
+                          <p className="text-green-600 font-semibold">₹{booking.totalPrice}</p>
                         </div>
                       </div>
                     </div>
@@ -259,7 +238,7 @@ export default function UserDashboard() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleCancelBooking(booking.id)}
+                            onClick={() => handleCancelBooking(booking._id)}
                             className="text-red-600 border-red-200 hover:bg-red-50"
                           >
                             <X className="w-4 h-4 mr-1" />
@@ -271,7 +250,7 @@ export default function UserDashboard() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleCancelBooking(booking.id)}
+                          onClick={() => handleCancelBooking(booking._id)}
                           className="text-red-600 border-red-200 hover:bg-red-50"
                         >
                           <X className="w-4 h-4 mr-1" />
@@ -283,9 +262,6 @@ export default function UserDashboard() {
                           Book Again
                         </Button>
                       )}
-                      <Button variant="outline" size="sm">
-                        View Details
-                      </Button>
                     </div>
                   </div>
                 </CardContent>

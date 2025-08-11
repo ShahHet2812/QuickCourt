@@ -14,4 +14,7 @@ const BookingSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
+// Add a compound index for unique bookings
+BookingSchema.index({ venue: 1, court: 1, date: 1, timeSlots: 1 }, { unique: true });
+
 module.exports = mongoose.model('Booking', BookingSchema);

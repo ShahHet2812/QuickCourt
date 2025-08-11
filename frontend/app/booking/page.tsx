@@ -1,19 +1,14 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useSearchParams, useRouter } from "next/navigation";
 import { CreditCard, CheckCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useAuth } from "@/context/AuthContext";
 
-const venueData = {
-  id: 1,
-  name: "SportZone Arena",
-  location: "Downtown, City Center",
-  sport: "Badminton",
-  pricePerHour: 1500,
-}
 
 const courts = [
   { id: 1, name: "Court 1", type: "Premium", price: 1800 },
@@ -23,10 +18,11 @@ const courts = [
 ]
 
 const timeSlots = [
-  "06:00 AM", "07:00 AM", "08:00 AM", "09:00 AM", "10:00 AM", "11:00 AM",
-  "12:00 PM", "01:00 PM", "02:00 PM", "03:00 PM", "04:00 PM", "05:00 PM",
-  "06:00 PM", "07:00 PM", "08:00 PM", "09:00 PM", "10:00 PM",
-]
+  "06:00", "07:00", "08:00", "09:00", "10:00", "11:00",
+  "12:00", "13:00", "14:00", "15:00", "16:00", "17:00",
+  "18:00", "19:00", "20:00", "21:00", "22:00",
+];
+
 
 export default function BookingPage() {
   const [step, setStep] = useState(1)
@@ -36,6 +32,57 @@ export default function BookingPage() {
   const [playerName, setPlayerName] = useState("")
   const [playerEmail, setPlayerEmail] = useState("")
   const [playerPhone, setPlayerPhone] = useState("")
+  const [bookedSlots, setBookedSlots] = useState<string[]>([]);
+  const { user, token } = useAuth();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const venueId = searchParams.get("venue");
+  const venueName = searchParams.get("name") || "a Venue";
+  const [cardDetails, setCardDetails] = useState({
+    number: '',
+    expiry: '',
+    cvv: '',
+    name: ''
+  });
+  const [paymentErrors, setPaymentErrors] = useState({
+    number: '',
+    expiry: '',
+    cvv: '',
+    name: ''
+  });
+
+
+  useEffect(() => {
+    const fetchBookedSlots = async () => {
+      if (!selectedDate || !venueId || !selectedCourt) return;
+      try {
+        const selectedCourtName = courts.find(c => c.id.toString() === selectedCourt)?.name;
+        if (!selectedCourtName) return;
+
+        const res = await fetch(`http://localhost:5000/api/bookings/booked-slots/${venueId}/${selectedCourtName}/${selectedDate}`);
+        if (res.ok) {
+          const { data } = await res.json();
+          setBookedSlots(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch booked slots:", error);
+      }
+    };
+    fetchBookedSlots();
+  }, [selectedDate, venueId, selectedCourt]);
+
+
+  const isSlotDisabled = (timeSlot: string) => {
+    if (!selectedDate) return true;
+
+    const now = new Date();
+    const slotDateTime = new Date(selectedDate);
+    const [hour, minute] = timeSlot.split(':').map(Number);
+    slotDateTime.setHours(hour, minute);
+
+    return slotDateTime < now || bookedSlots.includes(timeSlot);
+  };
+
 
   const selectedCourtData = courts.find((court) => court.id.toString() === selectedCourt)
   const totalHours = selectedTimeSlots.length
@@ -49,22 +96,74 @@ export default function BookingPage() {
     )
   }
 
-  const handleBookingSubmit = () => {
-    // Simulate payment processing
-    setTimeout(() => {
-      setStep(4) // Go to confirmation
-    }, 2000)
+  const handlePaymentValidation = () => {
+    const errors = {
+        number: '',
+        expiry: '',
+        cvv: '',
+        name: ''
+    };
+    const { number, expiry, cvv, name } = cardDetails;
+    if (number.replace(/\s/g, '').length !== 16) {
+      errors.number = 'Card number must be 16 digits.';
+    }
+    const [month, year] = expiry.split('/');
+    const expiryDate = new Date(Number(`20${year}`), Number(month) - 1);
+    const currentDate = new Date();
+    if (!/^(0[1-9]|1[0-2])\/?([0-9]{2})$/.test(expiry) || expiryDate < currentDate) {
+        errors.expiry = 'Invalid or past expiry date.';
+    }
+    if (cvv.length !== 3 || !/^\d+$/.test(cvv)) {
+      errors.cvv = 'CVV must be a 3-digit number.';
+    }
+    if (!name.trim()) {
+        errors.name = 'Name on card is required.';
+    }
+
+    setPaymentErrors(errors);
+    return Object.values(errors).every(x => x === "");
   }
 
-  // Add useEffect to get venue name from URL
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search)
-    const venueName = urlParams.get("name")
-    if (venueName) {
-      // Update venueData with the actual name
-      venueData.name = decodeURIComponent(venueName)
+  const handleBookingSubmit = async () => {
+    if (step === 3 && !handlePaymentValidation()) {
+        return;
     }
-  }, [])
+    if (!user || user.userType !== 'customer') {
+      alert("Only customers can make bookings.");
+      return;
+    }
+    
+    const bookingData = {
+        venue: venueId,
+        court: selectedCourtData?.name,
+        date: selectedDate,
+        timeSlots: selectedTimeSlots,
+        totalPrice: total,
+        playerName,
+        playerEmail,
+        playerPhone,
+    };
+
+    try {
+        const res = await fetch('http://localhost:5000/api/bookings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(bookingData)
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+            throw new Error(data.error || "Failed to create booking.");
+        }
+        setStep(4); // Go to confirmation
+    } catch (error: any) {
+        alert(`Booking failed: ${error.message}`);
+    }
+  }
+
 
   if (step === 4) {
     return (
@@ -78,15 +177,15 @@ export default function BookingPage() {
             </p>
             <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">
               <h3 className="font-semibold mb-2">Booking Details</h3>
-              <p className="text-sm text-gray-600">Venue: {venueData.name}</p>
+              <p className="text-sm text-gray-600">Venue: {venueName}</p>
               <p className="text-sm text-gray-600">Court: {selectedCourtData?.name}</p>
               <p className="text-sm text-gray-600">Date: {selectedDate}</p>
               <p className="text-sm text-gray-600">Time: {selectedTimeSlots.join(", ")}</p>
               <p className="text-sm text-gray-600">Total: ₹{total.toFixed(2)}</p>
             </div>
             <div className="space-y-2">
-              <Button className="w-full bg-green-600 hover:bg-green-700">View My Bookings</Button>
-              <Button variant="outline" className="w-full bg-transparent">
+              <Button className="w-full bg-green-600 hover:bg-green-700" onClick={() => router.push('/dashboard')}>View My Bookings</Button>
+              <Button variant="outline" className="w-full bg-transparent" onClick={() => router.push('/venues')}>
                 Book Another Court
               </Button>
             </div>
@@ -193,10 +292,13 @@ export default function BookingPage() {
                           <button
                             key={timeSlot}
                             onClick={() => handleTimeSlotToggle(timeSlot)}
+                            disabled={isSlotDisabled(timeSlot)}
                             className={`p-3 text-sm font-medium rounded-lg border-2 transition-all ${
                               selectedTimeSlots.includes(timeSlot)
                                 ? "bg-green-700 border-green-700 text-white"
-                                : "border-gray-200 hover:border-green-500 hover:bg-green-100 text-gray-700"
+                                : isSlotDisabled(timeSlot)
+                                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                  : "border-gray-200 hover:border-green-500 hover:bg-green-100 text-gray-700"
                             }`}
                           >
                             {timeSlot}
@@ -251,21 +353,25 @@ export default function BookingPage() {
                   <div className="space-y-4">
                     <div>
                       <Label htmlFor="cardNumber">Card Number</Label>
-                      <Input id="cardNumber" placeholder="1234 5678 9012 3456" className="h-12 rounded-xl" />
+                      <Input id="cardNumber" placeholder="1234 5678 9012 3456" value={cardDetails.number} onChange={(e) => setCardDetails({...cardDetails, number: e.target.value})} className="h-12 rounded-xl" />
+                      {paymentErrors.number && <p className="text-red-500 text-sm mt-1">{paymentErrors.number}</p>}
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="expiry">Expiry Date</Label>
-                        <Input id="expiry" placeholder="MM/YY" className="h-12 rounded-xl" />
+                        <Input id="expiry" placeholder="MM/YY" value={cardDetails.expiry} onChange={(e) => setCardDetails({...cardDetails, expiry: e.target.value})} className="h-12 rounded-xl" />
+                        {paymentErrors.expiry && <p className="text-red-500 text-sm mt-1">{paymentErrors.expiry}</p>}
                       </div>
                       <div>
                         <Label htmlFor="cvv">CVV</Label>
-                        <Input id="cvv" placeholder="123" className="h-12 rounded-xl" />
+                        <Input id="cvv" placeholder="123" value={cardDetails.cvv} onChange={(e) => setCardDetails({...cardDetails, cvv: e.target.value})} className="h-12 rounded-xl" />
+                        {paymentErrors.cvv && <p className="text-red-500 text-sm mt-1">{paymentErrors.cvv}</p>}
                       </div>
                     </div>
                     <div>
                       <Label htmlFor="cardName">Name on Card</Label>
-                      <Input id="cardName" placeholder="John Doe" className="h-12 rounded-xl" />
+                      <Input id="cardName" placeholder="John Doe" value={cardDetails.name} onChange={(e) => setCardDetails({...cardDetails, name: e.target.value})} className="h-12 rounded-xl" />
+                      {paymentErrors.name && <p className="text-red-500 text-sm mt-1">{paymentErrors.name}</p>}
                     </div>
                   </div>
                 )}
@@ -309,9 +415,8 @@ export default function BookingPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <h3 className="font-semibold text-slate-900">{venueData.name}</h3>
-                  <p className="text-sm text-gray-600">{venueData.location}</p>
-                  <p className="text-sm text-gray-600">{venueData.sport}</p>
+                  <h3 className="font-semibold text-slate-900">{venueName}</h3>
+
                 </div>
 
                 {selectedCourtData && (

@@ -59,45 +59,6 @@ const heroImages = [
   },
 ]
 
-const popularVenues = [
-  {
-    id: 1,
-    name: "SportZone Arena",
-    location: "Satellite, Ahmedabad",
-    price: 1500,
-    rating: 4.8,
-    image: "/sports-arena-badminton.png",
-    sport: "Badminton",
-  },
-  {
-    id: 2,
-    name: "Elite Tennis Club",
-    location: "Bodakdev, Ahmedabad",
-    price: 1800,
-    rating: 4.9,
-    image: "/tennis-club-court.png",
-    sport: "Tennis",
-  },
-  {
-    id: 3,
-    name: "Green Field Complex",
-    location: "Maninagar, Ahmedabad",
-    price: 2000,
-    rating: 4.7,
-    image: "/football-field-turf.png",
-    sport: "Football",
-  },
-  {
-    id: 4,
-    name: "City Sports Hub",
-    location: "Navrangpura, Ahmedabad",
-    price: 1600,
-    rating: 4.6,
-    image: "/sports-hub-basketball.png",
-    sport: "Basketball",
-  },
-]
-
 const popularSports = [
   {
     name: "Badminton",
@@ -131,12 +92,40 @@ const popularSports = [
   },
 ]
 
+interface Venue {
+  _id: string;
+  name: string;
+  location: string;
+  price: number;
+  rating: number;
+  image?: string;
+  sport: string;
+}
+
 export default function HomePage() {
   const { user } = useAuth();
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isPlaying, setIsPlaying] = useState(true)
   const [isHovered, setIsHovered] = useState(false)
   const [isTransitioning, setIsTransitioning] = useState(false)
+  const [popularVenues, setPopularVenues] = useState<Venue[]>([]);
+
+  useEffect(() => {
+    const fetchVenues = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/venues');
+        if (!res.ok) {
+          throw new Error('Failed to fetch venues');
+        }
+        const { data } = await res.json();
+        // Get first 4 venues for the popular section
+        setPopularVenues(data.slice(0, 4));
+      } catch (err: any) {
+        console.error(err.message);
+      }
+    };
+    fetchVenues();
+  }, []);
 
   const nextSlide = useCallback(() => {
     if (isTransitioning) return
@@ -278,7 +267,7 @@ export default function HomePage() {
         </div>
         <div className="flex overflow-x-auto space-x-4 sm:space-x-6 pb-4 scrollbar-hide">
           {popularVenues.map((venue) => (
-            <Card key={venue.id} className="flex-shrink-0 w-72 sm:w-80 hover:shadow-lg transition-shadow">
+            <Card key={venue._id} className="flex-shrink-0 w-72 sm:w-80 hover:shadow-lg transition-shadow">
               <CardContent className="p-0">
                 <div className="relative h-48">
                   <Image
@@ -304,7 +293,7 @@ export default function HomePage() {
                     </div>
                     <div className="text-right">
                       <div className="text-lg font-bold text-green-600">₹{venue.price}/hr</div>
-                      <Link href={`/booking?venue=${venue.id}`}>
+                      <Link href={`/booking?venue=${venue._id}&name=${encodeURIComponent(venue.name)}`}>
                         <Button size="sm" className="bg-green-600 hover:bg-green-700 mt-2">
                           Book Now
                         </Button>
