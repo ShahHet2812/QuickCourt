@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import Image from "next/image"
 
 import { useState } from "react"
 import Link from "next/link"
@@ -13,6 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export default function SignupPage() {
+  // State for form data
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -22,56 +24,100 @@ export default function SignupPage() {
     confirmPassword: "",
     userType: "",
   })
+  
+  // State for profile picture
+  const [avatarFile, setAvatarFile] = useState(null)
+  const [avatarPreview, setAvatarPreview] = useState(null)
+  
+  // State for password visibility
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  
+  // State for terms agreement
   const [agreeToTerms, setAgreeToTerms] = useState(false)
+  
+  // State for loading and errors
   const [isLoading, setIsLoading] = useState(false)
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [errors, setErrors] = useState({})
 
-  const handleInputChange = (field: string, value: string) => {
+  // Mock database of existing emails for validation
+  const existingEmails = ["test@example.com", "john.doe@quickcourt.com"]
+
+  // Handle changes to form inputs
+  const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
-    // Clear error when user starts typing
+    // Clear the specific error for the field being edited
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }))
     }
   }
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {}
+  // Handle avatar file selection and size validation
+  const handleAvatarChange = (e) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      if (file.size > 1 * 1024 * 1024) { // 1 MB limit
+        setErrors((prev) => ({ ...prev, avatar: "Image size must be less than 1 MB" }))
+        setAvatarFile(null)
+        setAvatarPreview(null)
+      } else {
+        setAvatarFile(file)
+        setAvatarPreview(URL.createObjectURL(file))
+        if (errors.avatar) {
+          setErrors((prev) => ({ ...prev, avatar: "" }))
+        }
+      }
+    }
+  }
 
+  // Validate the entire form
+  const validateForm = () => {
+    const newErrors = {}
+    
+    // Profile picture validation
+    if (!avatarFile) newErrors.avatar = "Profile picture is required"
+
+    // First and Last Name validation
     if (!formData.firstName.trim()) newErrors.firstName = "First name is required"
     if (!formData.lastName.trim()) newErrors.lastName = "Last name is required"
 
+    // Email validation
     if (!formData.email) {
       newErrors.email = "Email is required"
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = "Please enter a valid email"
+    } else if (existingEmails.includes(formData.email)) {
+      newErrors.email = "This email is already registered"
     }
 
+    // Phone number validation
     if (!formData.phone) {
       newErrors.phone = "Phone number is required"
     } else if (!/^\+?[\d\s-()]+$/.test(formData.phone)) {
       newErrors.phone = "Please enter a valid phone number"
     }
 
+    // Password validation (8-20 characters, at least 1 uppercase, 1 digit, and 1 of '@' or '#')
+    const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@#]).{8,20}$/
     if (!formData.password) {
       newErrors.password = "Password is required"
-    } else if (formData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters"
-    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
-      newErrors.password = "Password must contain uppercase, lowercase, and number"
+    } else if (!passwordRegex.test(formData.password)) {
+      newErrors.password = "Password must be 8-20 chars, with 1 uppercase, 1 digit, and 1 '@' or '#'"
     }
 
+    // Confirm password validation
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = "Please confirm your password"
     } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = "Passwords do not match"
     }
 
+    // User type validation
     if (!formData.userType) {
-      newErrors.userType = "Please select account type"
+      newErrors.userType = "Please select an account type"
     }
 
+    // Terms agreement validation
     if (!agreeToTerms) {
       newErrors.terms = "You must agree to the terms and conditions"
     }
@@ -79,7 +125,8 @@ export default function SignupPage() {
     return newErrors
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Handle form submission
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setIsLoading(true)
 
@@ -91,19 +138,20 @@ export default function SignupPage() {
     }
 
     try {
-      // Simulate API call for user registration
+      // Simulate an API call for user registration
       await new Promise((resolve) => setTimeout(resolve, 2000))
-      console.log("Signup successful", formData)
+      console.log("Signup successful", formData, "Avatar:", avatarFile)
 
-      // Redirect to email verification page with email parameter
-      window.location.href = `/verify-email?email=${encodeURIComponent(formData.email)}`
+      // Redirect to a success page or login page after successful signup
+      window.location.href = `/login`
     } catch (error) {
       setErrors({ general: "Something went wrong. Please try again." })
     } finally {
       setIsLoading(false)
     }
   }
-
+  
+  // Calculate password strength for the indicator
   const passwordStrength = () => {
     const password = formData.password
     let strength = 0
@@ -111,21 +159,22 @@ export default function SignupPage() {
     if (/[a-z]/.test(password)) strength++
     if (/[A-Z]/.test(password)) strength++
     if (/\d/.test(password)) strength++
-    if (/[^a-zA-Z\d]/.test(password)) strength++
+    if (/[@#]/.test(password)) strength++ // Check for @ or #
     return strength
   }
 
-  const getStrengthColor = (strength: number) => {
+  const getStrengthColor = (strength) => {
     if (strength <= 2) return "bg-red-500"
-    if (strength <= 3) return "bg-yellow-500"
+    if (strength <= 4) return "bg-yellow-500"
     return "bg-green-500"
   }
 
-  const getStrengthText = (strength: number) => {
+  const getStrengthText = (strength) => {
     if (strength <= 2) return "Weak"
-    if (strength <= 3) return "Medium"
+    if (strength <= 4) return "Medium"
     return "Strong"
   }
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-green-900 flex items-center justify-center p-4">
@@ -155,6 +204,33 @@ export default function SignupPage() {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Profile Picture */}
+              <div className="flex flex-col items-center gap-2">
+                <Label htmlFor="avatar" className="text-sm font-medium text-slate-700">
+                  Profile Picture
+                </Label>
+                <div className="relative w-24 h-24 rounded-full border-2 border-gray-200 overflow-hidden group">
+                  {avatarPreview ? (
+                    <Image src={avatarPreview} alt="Profile Preview" layout="fill" objectFit="cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
+                      <User className="w-12 h-12" />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="text-white text-sm">Upload</span>
+                  </div>
+                  <Input
+                    id="avatar"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                  />
+                </div>
+                {errors.avatar && <p className="text-red-500 text-sm text-center">{errors.avatar}</p>}
+              </div>
+
               {/* Name Fields */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -215,7 +291,7 @@ export default function SignupPage() {
                 </div>
                 {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
               </div>
-
+              
               {/* Phone */}
               <div className="space-y-2">
                 <Label htmlFor="phone" className="text-sm font-medium text-slate-700">
@@ -298,7 +374,7 @@ export default function SignupPage() {
                         className={`text-xs font-medium ${
                           passwordStrength() <= 2
                             ? "text-red-500"
-                            : passwordStrength() <= 3
+                            : passwordStrength() <= 4
                               ? "text-yellow-500"
                               : "text-green-500"
                         }`}
@@ -324,6 +400,12 @@ export default function SignupPage() {
                           className={`w-3 h-3 ${/\d/.test(formData.password) ? "text-green-500" : "text-gray-300"}`}
                         />
                         <span>At least one number</span>
+                      </div>
+                       <div className="flex items-center space-x-2">
+                        <Check
+                          className={`w-3 h-3 ${/[@#]/.test(formData.password) ? "text-green-500" : "text-gray-300"}`}
+                        />
+                        <span>At least one special character (@ or #)</span>
                       </div>
                     </div>
                   </div>
@@ -358,14 +440,14 @@ export default function SignupPage() {
                 </div>
                 {errors.confirmPassword && <p className="text-red-500 text-sm">{errors.confirmPassword}</p>}
               </div>
-
+              
               {/* Terms Agreement */}
               <div className="space-y-2">
                 <div className="flex items-start space-x-2">
                   <Checkbox
                     id="terms"
                     checked={agreeToTerms}
-                    onCheckedChange={(checked) => setAgreeToTerms(checked as boolean)}
+                    onCheckedChange={(checked) => setAgreeToTerms(checked)}
                     className="mt-1"
                   />
                   <Label htmlFor="terms" className="text-sm text-gray-600 cursor-pointer leading-relaxed">
@@ -397,7 +479,7 @@ export default function SignupPage() {
                 )}
               </Button>
             </form>
-
+            
             {/* Social Signup */}
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
