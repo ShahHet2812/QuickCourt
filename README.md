@@ -1,143 +1,54 @@
-# QuickCourt – A Local Sports Booking Platform--
-            
-## Overview
-QuickCourt is a full-stack web application that enables sports enthusiasts to discover, book, and manage local sports facilities such as badminton courts, turf grounds, and tennis tables. The platform connects **Users**, **Facility Owners**, and **Admins** to ensure a smooth booking process, accurate scheduling, and a vibrant sports community.
+Create a responsive React + Tailwind CSS frontend for a sports booking platform called "QuickCourt".
 
-## Roles & Features
+Theme:
+- Modern, minimal, and vibrant.
+- Sports-themed with a fresh green (#16A34A), dark navy (#0F172A), and white color palette.
+- Use rounded corners, subtle shadows, and hover effects for interactive elements.
 
-### **User**
-- **Authentication**
-  - Sign up with email, password, full name, avatar, and role.
-  - Login with email and password.
-  - OTP verification during signup.
-- **Home Page**
-  - Welcome banner/carousel.
-  - Quick links to popular venues and sports.
-- **Venues Page**
-  - Browse approved sports venues.
-  - Search and filter (sport type, price, venue type, rating).
-  - Pagination with venue cards showing:
-    - Venue Name
-    - Sport Types
-    - Price/hour
-    - Location
-    - Rating (optional)
-- **Single Venue Page**
-  - Venue details, sports list, amenities, gallery, reviews.
-  - **Book Now** button.
-- **Court Booking**
-  - Select court, time slot, and view pricing.
-  - Simulated payment.
-  - Redirect to "My Bookings".
-- **Profile**
-  - View & edit personal details.
-  - View bookings with status (Confirmed/Cancelled/Completed).
-  - Option to cancel future bookings.
+Pages & Components:
+1. **Home Page**
+   - Hero banner/carousel showcasing sports images (badminton, tennis, football turf).
+   - Sections for "Popular Venues" and "Popular Sports" in a horizontal scroll card layout.
+   - Each card: venue/sport image, name, location, price/hour, and a "Book Now" button.
 
----
+2. **Venues Page**
+   - Search bar at top with filters for sport type, price range, and rating.
+   - Grid of venue cards (image, venue name, sport type, price/hour, location).
+   - Pagination controls at the bottom.
 
-### **Facility Owner**
-- **Dashboard**
-  - KPIs: Total Bookings, Active Courts, Earnings (simulated), Booking Calendar.
-  - Charts: Booking Trends, Earnings Summary, Peak Booking Hours.
-- **Facility Management**
-  - Add/edit facility details (name, location, description, sports, amenities, photos).
-- **Court Management**
-  - Manage courts, pricing, operating hours.
-  - Block maintenance slots.
-- **Booking Overview**
-  - List upcoming and past bookings with status.
-- **Profile**
-  - Edit owner details.
+3. **Single Venue Page**
+   - Large venue image gallery slider.
+   - Venue details: name, description, sports offered, amenities, location.
+   - "Book Now" button fixed on scroll.
 
----
+4. **Booking Page**
+   - Form to select court, date, and time slot.
+   - Pricing summary section with "Proceed to Payment" button.
+   - Clean confirmation screen after simulated payment.
 
-### **Admin**
-- **Dashboard**
-  - Global stats: Total users, facility owners, bookings, active courts.
-  - Charts: Booking Activity, User Trends, Facility Approval Trend, Popular Sports, Earnings.
-- **Facility Approval**
-  - Review, approve, or reject facility registrations.
-- **User Management**
-  - Search and filter by role/status.
-  - Ban/unban users.
-  - View booking history.
-- **Reports & Moderation** (Optional)
-  - Handle flagged facilities/users.
-- **Profile**
-  - Edit admin details.
+5. **User Dashboard (My Bookings)**
+   - List of bookings in card view.
+   - Each card: venue name, court, date, time, booking status, and cancel button.
 
----
+6. **Facility Owner Dashboard**
+   - KPI cards (Total Bookings, Active Courts, Earnings).
+   - Booking trends chart (use Chart.js).
+   - Buttons to add/edit facilities and courts.
+   - Table of upcoming bookings.
 
-## Tech Stack (Suggested)
-- **Frontend:** React.js (with Tailwind CSS / Material UI)
-- **Backend:** Node.js + Express.js
-- **Database:** MongoDB
-- **Charts:** Chart.js / Recharts
-- **Authentication:** JWT + OTP simulation
-- **Payment Simulation:** Razorpay/Stripe (test mode) or simple "Booking Confirmed" screen
+7. **Admin Dashboard**
+   - KPI cards (Total Users, Facility Owners, Total Bookings).
+   - Facility approval list with approve/reject buttons.
+   - User management table with search and ban/unban actions.
 
----
+UI Style Guidelines:
+- Font: "Inter" or "Poppins".
+- Buttons: Large, rounded, with hover animations.
+- Inputs: Rounded with subtle border.
+- Use Tailwind's utility classes for spacing and responsiveness.
+- Mobile-friendly layout with collapsible navbar.
 
-## Hackathon Execution Plan (24 Hours)
-
-### **Hour 0–2: Setup**
-- Create GitHub repo and initialize frontend (`create-react-app` or Vite) & backend (`Express.js`).
-- Setup MongoDB schema for **Users**, **Venues**, **Courts**, **Bookings**.
-- Plan minimal UI wireframes (skip perfection).
-
----
-
-### **Hour 3–6: Authentication**
-- Implement signup/login with role selection (User / Facility Owner / Admin).
-- OTP simulation (simple code match).
-- JWT authentication for protected routes.
-
----
-
-### **Hour 6–10: User Features**
-- **Frontend**: Home Page, Venues Page (mock data first), Venue Details Page, Booking Page.
-- **Backend**: CRUD for venues & bookings.
-- Simulate payment (status = "Confirmed").
-
----
-
-### **Hour 10–14: Facility Owner**
-- Dashboard with counts (Total Bookings, Active Courts).
-- Add/Edit facility, add courts, set pricing.
-- View bookings for their courts.
-
----
-
-### **Hour 14–18: Admin**
-- Facility approval page (approve/reject).
-- User management (ban/unban, view history).
-- Global stats (dummy chart data if time is short).
-
----
-
-### **Hour 18–22: Polish & Charts**
-- Integrate Chart.js for trends (dummy data OK if backend time is short).
-- Add pagination & search filters for venues.
-- Improve booking calendar for Facility Owners.
-
----
-
-### **Hour 22–24: Final Touch & Deployment**
-- Test all flows: User → Booking → Owner → Admin approval.
-- Fix bugs, adjust styling.
-- Deploy to **Vercel** (frontend) & **Render** (backend).
-- Update README & record demo video.
-
----
-
-## Future Enhancements
-- Real payment gateway integration.
-- Reviews & ratings for venues.
-- Real-time slot blocking.
-- Email notifications.
-
----
-
-## Mockups
-[QuickCourt Wireframes](https://link.excalidraw.com/l/65VNwvy7c4X/AU4FuaybEgm)
+Output:
+- Full React components for each page.
+- Tailwind CSS styling.
+- Dummy data for cards, lists, and charts.
