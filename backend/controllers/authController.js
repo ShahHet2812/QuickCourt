@@ -5,7 +5,23 @@ const User = require('../models/User');
 exports.signup = async (req, res) => {
   try {
     const { firstName, lastName, email, phone, password, userType } = req.body;
-    const user = await User.create({ firstName, lastName, email, phone, password, userType });
+    
+    let avatarPath = '';
+    if (req.file) {
+      // Create a server-accessible path for the avatar
+      avatarPath = `/uploads/avatars/${req.file.filename}`;
+    }
+
+    const user = await User.create({ 
+      firstName, 
+      lastName, 
+      email, 
+      phone, 
+      password, 
+      userType,
+      avatar: avatarPath 
+    });
+
     sendTokenResponse(user, 200, res);
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });

@@ -5,6 +5,7 @@ import Image from "next/image"
 
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Eye, EyeOff, Mail, Lock, User, Phone, ArrowRight, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,6 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export default function SignupPage() {
+  const router = useRouter();
   // State for form data
   interface FormDataShape {
     firstName: string
@@ -52,9 +54,6 @@ export default function SignupPage() {
   // State for loading and errors
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<FormErrors>({})
-
-  // Mock database of existing emails for validation
-  const existingEmails = ["test@example.com", "john.doe@quickcourt.com"]
 
   // Handle changes to form inputs
   const handleInputChange = (field: keyof FormDataShape, value: string) => {
@@ -99,8 +98,6 @@ export default function SignupPage() {
       newErrors.email = "Email is required"
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = "Please enter a valid email"
-    } else if (existingEmails.includes(formData.email)) {
-      newErrors.email = "This email is already registered"
     }
 
     // Phone number validation
@@ -140,29 +137,55 @@ export default function SignupPage() {
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setIsLoading(true)
+    e.preventDefault();
+    setIsLoading(true);
+    setErrors({});
 
-    const validationErrors = validateForm()
+    const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors)
-      setIsLoading(false)
-      return
+      setErrors(validationErrors);
+      setIsLoading(false);
+      return;
+    }
+
+    const data = new FormData();
+    data.append('firstName', formData.firstName);
+    data.append('lastName', formData.lastName);
+    data.append('email', formData.email);
+    data.append('phone', formData.phone);
+    data.append('password', formData.password);
+    data.append('userType', formData.userType);
+    if (avatarFile) {
+      data.append('avatar', avatarFile);
     }
 
     try {
-      // Simulate an API call for user registration
-      await new Promise((resolve) => setTimeout(resolve, 2000))
-      console.log("Signup successful", formData, "Avatar:", avatarFile)
+      const res = await fetch('http://localhost:5000/api/auth/signup', {
+        method: 'POST',
+        body: data,
+      });
 
-      // Redirect to a success page or login page after successful signup
-      window.location.href = `/login`
-    } catch (error) {
-      setErrors({ general: "Something went wrong. Please try again." })
+      const result = await res.json();
+
+      if (!res.ok) {
+        throw new Error(result.error || 'Something went wrong');
+      }
+
+      console.log('Signup successful', result);
+      // You can store the token in localStorage if you want to automatically log the user in
+      // localStorage.setItem('token', result.token);
+      
+      router.push('/login'); // Redirect to login page after successful signup
+    } catch (error: any) {
+        if (error.message.includes('E11000 duplicate key error')) {
+            setErrors({ email: "This email is already registered" });
+        } else {
+            setErrors({ general: error.message || "Something went wrong. Please try again." });
+        }
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
   
   // Calculate password strength for the indicator
   const passwordStrength = (): number => {
