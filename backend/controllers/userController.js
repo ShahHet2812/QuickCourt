@@ -1,4 +1,6 @@
 const User = require('../models/User');
+const Booking = require('../models/Booking');
+const Venue = require('../models/Venue');
 
 // ... (getMe and updateProfile functions remain the same)
 exports.getMe = async (req, res) => {
@@ -34,8 +36,41 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
-// @desc    Update user settings
-// @route   PUT /api/users/settings
+// @desc    Get user activity stats
+// @route   GET /api/users/stats
+exports.getUserStats = async (req, res) => {
+    try {
+        const bookings = await Booking.find({ user: req.user.id }).populate('venue');
+
+        const totalBookings = bookings.length;
+        const hoursPlayed = bookings.reduce((acc, booking) => acc + booking.timeSlots.length, 0);
+
+        const sportCounts = bookings.reduce((acc, booking) => {
+            if (booking.venue && booking.venue.courts) {
+                const court = booking.venue.courts.find(c => c.name === booking.court);
+                if (court) {
+                    acc[court.sport] = (acc[court.sport] || 0) + 1;
+                }
+            }
+            return acc;
+        }, {});
+
+        const favoriteSport = Object.keys(sportCounts).reduce((a, b) => sportCounts[a] > sportCounts[b] ? a : b, 'N/A');
+
+        res.status(200).json({
+            success: true,
+            data: {
+                totalBookings,
+                hoursPlayed,
+                favoriteSport
+            }
+        });
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+};
+
+// ... (updateSettings and deleteAccount functions remain the same)
 exports.updateSettings = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
@@ -53,8 +88,6 @@ exports.updateSettings = async (req, res) => {
   }
 };
 
-// @desc    Delete user account
-// @route   DELETE /api/users/delete
 exports.deleteAccount = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);

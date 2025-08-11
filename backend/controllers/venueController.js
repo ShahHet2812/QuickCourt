@@ -4,8 +4,22 @@ const Venue = require('../models/Venue');
 // @route   GET /api/venues
 exports.getVenues = async (req, res) => {
   try {
-    const venues = await Venue.find({ status: 'approved' });
-    res.status(200).json({ success: true, data: venues });
+    let venues = await Venue.find({ status: 'approved' });
+
+    // Normalize venue data to ensure it has the new `courts` structure
+    const normalizedVenues = venues.map(venue => {
+      const venueObj = venue.toObject();
+      if (!Array.isArray(venueObj.courts)) {
+        venueObj.courts = [{
+          name: 'Main Court',
+          sport: venueObj.sport || 'Unknown',
+          price: venueObj.price || 0
+        }];
+      }
+      return venueObj;
+    });
+
+    res.status(200).json({ success: true, data: normalizedVenues });
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });
   }
@@ -19,7 +33,18 @@ exports.getVenue = async (req, res) => {
     if (!venue) {
       return res.status(404).json({ success: false, error: 'Venue not found' });
     }
-    res.status(200).json({ success: true, data: venue });
+
+    // Also normalize the single venue object
+    const venueObj = venue.toObject();
+    if (!Array.isArray(venueObj.courts)) {
+      venueObj.courts = [{
+        name: 'Main Court',
+        sport: venueObj.sport || 'Unknown',
+        price: venueObj.price || 0
+      }];
+    }
+
+    res.status(200).json({ success: true, data: venueObj });
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });
   }

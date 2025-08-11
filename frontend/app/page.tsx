@@ -6,6 +6,7 @@ import Link from "next/link"
 import { ChevronLeft, ChevronRight, MapPin, Star, Play, Pause } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
 import { useAuth } from "@/context/AuthContext"
 
 const heroImages = [
@@ -92,14 +93,22 @@ const popularSports = [
   },
 ]
 
+interface Court {
+  _id: string;
+  name: string;
+  sport: string;
+  price: number;
+}
+
 interface Venue {
   _id: string;
   name: string;
   location: string;
-  price: number;
   rating: number;
+  reviews: number;
   image?: string;
-  sport: string;
+  amenities: string[];
+  courts: Court[];
 }
 
 export default function HomePage() {
@@ -118,8 +127,7 @@ export default function HomePage() {
           throw new Error('Failed to fetch venues');
         }
         const { data } = await res.json();
-        // Get first 4 venues for the popular section
-        setPopularVenues(data.slice(0, 4));
+        setPopularVenues(data.slice(0, 8)); // Fetch more for the slider
       } catch (err: any) {
         console.error(err.message);
       }
@@ -265,81 +273,108 @@ export default function HomePage() {
             View All →
           </Link>
         </div>
-        <div className="flex overflow-x-auto space-x-4 sm:space-x-6 pb-4 scrollbar-hide">
-          {popularVenues.map((venue) => (
-            <Card key={venue._id} className="flex-shrink-0 w-72 sm:w-80 hover:shadow-lg transition-shadow">
-              <CardContent className="p-0">
-                <div className="relative h-48">
-                  <Image
-                    src={venue.image || "/placeholder.svg"}
-                    alt={venue.name}
-                    fill
-                    className="object-cover rounded-t-lg"
-                  />
-                  <div className="absolute top-2 right-2 bg-white px-2 py-1 rounded-full text-sm font-medium">
-                    {venue.sport}
-                  </div>
+        <Carousel
+          opts={{
+            align: "start",
+            loop: true,
+          }}
+          className="w-full"
+        >
+          <CarouselContent>
+            {popularVenues.map((venue) => (
+              <CarouselItem key={venue._id} className="md:basis-1/2 lg:basis-1/3">
+                <div className="p-1">
+                  <Card className="hover:shadow-lg transition-shadow">
+                    <CardContent className="p-0">
+                      <div className="relative h-48">
+                        <Image
+                          src={venue.image || "/placeholder.svg"}
+                          alt={venue.name}
+                          fill
+                          className="object-cover rounded-t-lg"
+                        />
+                        <div className="absolute top-2 right-2 bg-white px-2 py-1 rounded-full text-sm font-medium">
+                          {Array.isArray(venue.courts) ? Array.from(new Set(venue.courts.map(c => c.sport))).join(', ') : ''}
+                        </div>
+                      </div>
+                      <div className="p-4">
+                        <h3 className="font-bold text-lg mb-2">{venue.name}</h3>
+                        <div className="flex items-center text-gray-600 mb-2">
+                          <MapPin className="w-4 h-4 mr-1" />
+                          <span className="text-sm">{venue.location}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center">
+                            <Star className="w-4 h-4 text-yellow-400 mr-1" />
+                            <span className="text-sm font-medium">{venue.rating.toFixed(1)}</span>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-lg font-bold text-green-600">₹{Array.isArray(venue.courts) ? Math.min(...venue.courts.map(c => c.price)) : 0}/hr</div>
+                            <Link href={`/booking?venue=${venue._id}&name=${encodeURIComponent(venue.name)}`}>
+                              <Button size="sm" className="bg-green-600 hover:bg-green-700 mt-2">
+                                Book Now
+                              </Button>
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
-                <div className="p-4">
-                  <h3 className="font-bold text-lg mb-2">{venue.name}</h3>
-                  <div className="flex items-center text-gray-600 mb-2">
-                    <MapPin className="w-4 h-4 mr-1" />
-                    <span className="text-sm">{venue.location}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <Star className="w-4 h-4 text-yellow-400 mr-1" />
-                      <span className="text-sm font-medium">{venue.rating}</span>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-lg font-bold text-green-600">₹{venue.price}/hr</div>
-                      <Link href={`/booking?venue=${venue._id}&name=${encodeURIComponent(venue.name)}`}>
-                        <Button size="sm" className="bg-green-600 hover:bg-green-700 mt-2">
-                          Book Now
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="absolute left-0 top-1/2 -translate-y-1/2 z-10" />
+          <CarouselNext className="absolute right-0 top-1/2 -translate-y-1/2 z-10" />
+        </Carousel>
       </section>
 
       {/* Popular Sports Section */}
       <section className="py-16 px-4 max-w-7xl mx-auto bg-white rounded-2xl mx-4 shadow-sm">
         <h2 className="text-3xl font-bold text-slate-900 mb-8 text-center">Popular Sports</h2>
-        <div className="flex overflow-x-auto space-x-4 sm:space-x-6 pb-4 scrollbar-hide">
-          {popularSports.map((sport, index) => (
-            <Card key={index} className="flex-shrink-0 w-56 sm:w-64 hover:shadow-lg transition-all hover:scale-105">
-              <CardContent className="p-0">
-                <div className="relative h-32">
-                  <Image
-                    src={sport.image || "/placeholder.svg"}
-                    alt={sport.name}
-                    fill
-                    className="object-cover rounded-t-lg"
-                  />
-                  <div className={`absolute inset-0 ${sport.color} opacity-20 rounded-t-lg`} />
+        <Carousel
+          opts={{
+            align: "start",
+          }}
+          className="w-full"
+        >
+          <CarouselContent>
+            {popularSports.map((sport, index) => (
+              <CarouselItem key={index} className="sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                <div className="p-1">
+                  <Card className="hover:shadow-lg transition-all hover:scale-105">
+                    <CardContent className="p-0">
+                      <div className="relative h-32">
+                        <Image
+                          src={sport.image || "/placeholder.svg"}
+                          alt={sport.name}
+                          fill
+                          className="object-cover rounded-t-lg"
+                        />
+                        <div className={`absolute inset-0 ${sport.color} opacity-20 rounded-t-lg`} />
+                      </div>
+                      <div className="p-4 text-center">
+                        <h3 className="font-bold text-lg mb-1">{sport.name}</h3>
+                        <p className="text-gray-600 text-sm">{sport.venues} venues available</p>
+                        <Link href={`/venues?sport=${sport.name.toLowerCase()}`}>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="mt-3 border-green-600 text-green-600 hover:bg-green-50 bg-transparent"
+                          >
+                            Explore
+                          </Button>
+                        </Link>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
-                <div className="p-4 text-center">
-                  <h3 className="font-bold text-lg mb-1">{sport.name}</h3>
-                  <p className="text-gray-600 text-sm">{sport.venues} venues available</p>
-                  <Link href={`/venues?sport=${sport.name.toLowerCase()}`}>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="mt-3 border-green-600 text-green-600 hover:bg-green-50 bg-transparent"
-                    >
-                      Explore
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="absolute left-0 top-1/2 -translate-y-1/2 z-10" />
+          <CarouselNext className="absolute right-0 top-1/2 -translate-y-1/2 z-10" />
+        </Carousel>
       </section>
 
       {/* CTA Section */}

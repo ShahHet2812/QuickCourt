@@ -12,6 +12,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useAuth } from "@/context/AuthContext"
 
+interface ActivityStats {
+  totalBookings: number;
+  hoursPlayed: number;
+  favoriteSport: string;
+}
+
 export default function ProfilePage() {
   const { user, token, login } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
@@ -30,6 +36,7 @@ export default function ProfilePage() {
     avatar: "",
   });
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [activityStats, setActivityStats] = useState<ActivityStats | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -46,8 +53,25 @@ export default function ProfilePage() {
         joinDate: new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) || "",
         avatar: user.avatar ? `http://localhost:5000${user.avatar}` : "",
       });
+
+      const fetchStats = async () => {
+        try {
+          const res = await fetch('http://localhost:5000/api/users/stats', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          const data = await res.json();
+          if (data.success) {
+            setActivityStats(data.data);
+          }
+        } catch (error) {
+          console.error("Error fetching stats:", error);
+        }
+      };
+      fetchStats();
     }
-  }, [user]);
+  }, [user, token]);
 
   const handleInputChange = (field: string, value: string) => {
     setProfileData((prev) => ({ ...prev, [field]: value }))
@@ -58,7 +82,6 @@ export default function ProfilePage() {
     try {
       const dataToUpdate = new FormData();
       
-      // Append all fields to the FormData object
       dataToUpdate.append('firstName', profileData.firstName);
       dataToUpdate.append('lastName', profileData.lastName);
       dataToUpdate.append('phone', profileData.phone);
@@ -85,7 +108,6 @@ export default function ProfilePage() {
         throw new Error(data.error || 'Failed to update profile');
       }
 
-      // Update the user in the global context with the new data from the server
       if (token) {
         login({ user: data.data, token });
       }
@@ -93,7 +115,6 @@ export default function ProfilePage() {
       setIsEditing(false);
     } catch (error) {
       console.error("Error saving profile:", error);
-      // You can add an error state here to show a message to the user
     } finally {
       setIsSaving(false);
     }
@@ -114,7 +135,7 @@ export default function ProfilePage() {
   }
 
   if (!user) {
-    return <div>Loading profile...</div>; // Or a redirect to login
+    return <div>Loading profile...</div>;
   }
 
   return (
@@ -200,7 +221,7 @@ export default function ProfilePage() {
               </CardContent>
             </Card>
 
-            {/* Quick Stats (Static for now) */}
+            {/* Activity Stats */}
             <Card className="mt-6">
               <CardHeader>
                 <CardTitle className="text-lg">Activity Stats</CardTitle>
@@ -208,15 +229,15 @@ export default function ProfilePage() {
               <CardContent className="space-y-4">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Total Bookings</span>
-                  <span className="font-semibold">24</span>
+                  <span className="font-semibold">{activityStats?.totalBookings ?? 0}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Favorite Sport</span>
-                  <span className="font-semibold">Badminton</span>
+                  <span className="font-semibold">{activityStats?.favoriteSport ?? 'N/A'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Hours Played</span>
-                  <span className="font-semibold">48</span>
+                  <span className="font-semibold">{activityStats?.hoursPlayed ?? 0}</span>
                 </div>
               </CardContent>
             </Card>
