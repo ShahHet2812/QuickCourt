@@ -32,8 +32,8 @@ const popularVenues = [
   {
     id: 1,
     name: "SportZone Arena",
-    location: "Downtown, City Center",
-    price: 50,
+    location: "Satellite, Ahmedabad",
+    price: 1500,
     rating: 4.8,
     image: "/sports-arena-badminton.png",
     sport: "Badminton",
@@ -41,8 +41,8 @@ const popularVenues = [
   {
     id: 2,
     name: "Elite Tennis Club",
-    location: "Uptown, North District",
-    price: 75,
+    location: "Bodakdev, Ahmedabad",
+    price: 1800,
     rating: 4.9,
     image: "/tennis-club-court.png",
     sport: "Tennis",
@@ -50,8 +50,8 @@ const popularVenues = [
   {
     id: 3,
     name: "Green Field Complex",
-    location: "Suburbs, East Side",
-    price: 100,
+    location: "Maninagar, Ahmedabad",
+    price: 2000,
     rating: 4.7,
     image: "/football-field-turf.png",
     sport: "Football",
@@ -59,8 +59,8 @@ const popularVenues = [
   {
     id: 4,
     name: "City Sports Hub",
-    location: "Central Park Area",
-    price: 60,
+    location: "Navrangpura, Ahmedabad",
+    price: 1600,
     rating: 4.6,
     image: "/sports-hub-basketball.png",
     sport: "Basketball",
@@ -71,7 +71,7 @@ const popularSports = [
   {
     name: "Badminton",
     venues: 45,
-    image: "/placeholder-opshk.png",
+    image: "/modern-badminton-court.png",
     color: "bg-blue-500",
   },
   {
@@ -93,9 +93,9 @@ const popularSports = [
     color: "bg-purple-500",
   },
   {
-    name: "Cricket",
-    venues: 18,
-    image: "/placeholder.svg?height=150&width=200",
+    name: "Box Cricket",
+    venues: 4,
+    image: "/cricketbox.jpg",
     color: "bg-red-500",
   },
 ]
@@ -214,7 +214,7 @@ export default function HomePage() {
                       <span className="text-sm font-medium">{venue.rating}</span>
                     </div>
                     <div className="text-right">
-                      <div className="text-lg font-bold text-green-600">${venue.price}/hr</div>
+                      <div className="text-lg font-bold text-green-600">₹{venue.price}/hr</div>
                       <Link href={`/booking?venue=${venue.id}`}>
                         <Button size="sm" className="bg-green-600 hover:bg-green-700 mt-2">
                           Book Now
