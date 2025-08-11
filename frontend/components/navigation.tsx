@@ -162,7 +162,24 @@ export function Navigation() {
 
         {isOpen && (
           <div className="md:hidden">
-            {/* Mobile Nav would also use renderDashboardLink() */}
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+              <Link href="/" className="block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-800">Home</Link>
+              <Link href="/venues" className="block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-800">Venues</Link>
+              {isLoggedIn && user && (
+                <>
+                  <Link href={user.userType === 'admin' ? '/admin-dashboard' : user.userType === 'owner' ? '/owner-dashboard' : '/dashboard'} className="block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-800">Dashboard</Link>
+                  <Link href="/profile" className="block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-800">Profile</Link>
+                  <Link href="/settings" className="block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-800">Settings</Link>
+                  <button onClick={handleLogout} className="w-full text-left block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-800 text-red-500">Logout</button>
+                </>
+              )}
+              {!isLoggedIn && (
+                <>
+                  <Link href="/login" className="block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-800">Login</Link>
+                  <Link href="/signup" className="block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-800">Sign Up</Link>
+                </>
+              )}
+            </div>
           </div>
         )}
       </div>

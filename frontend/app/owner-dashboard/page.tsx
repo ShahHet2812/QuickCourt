@@ -122,7 +122,7 @@ export default function OwnerDashboard() {
                 <div className="flex items-center justify-between">
                     <div>
                     <p className="text-sm font-medium text-gray-600">Monthly Earnings</p>
-                    <p className="text-3xl font-bold text-slate-900">${kpiData.monthlyEarnings.toLocaleString()}</p>
+                    <p className="text-3xl font-bold text-slate-900">₹{kpiData.monthlyEarnings.toLocaleString()}</p>
                     </div>
                     <div className="bg-yellow-100 p-3 rounded-full"><DollarSign className="w-6 h-6 text-yellow-600" /></div>
                 </div>
@@ -198,7 +198,7 @@ export default function OwnerDashboard() {
                       <div>{booking.date}</div>
                       <div className="text-gray-600">{booking.time}</div>
                     </TableCell>
-                    <TableCell className="font-medium text-green-600">${booking.price}</TableCell>
+                    <TableCell className="font-medium text-green-600">₹{booking.price}</TableCell>
                     <TableCell>
                       <Badge className={ booking.status === "confirmed" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}>
                         {booking.status}

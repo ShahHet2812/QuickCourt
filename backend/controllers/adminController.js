@@ -9,10 +9,6 @@ exports.getAdminDashboard = async (req, res) => {
     const totalUsers = await User.countDocuments();
     const facilityOwners = await User.countDocuments({ userType: 'owner' });
     const totalBookings = await Booking.countDocuments();
-    const totalRevenue = (await Booking.aggregate([
-        { $match: { status: { $in: ['confirmed', 'completed'] } } },
-        { $group: { _id: null, total: { $sum: '$totalPrice' } } }
-    ]))[0]?.total || 0;
 
     const pendingFacilities = await Venue.find({ 
       status: { $in: ['pending', 'pending_update', 'pending_deletion'] } 
@@ -23,7 +19,7 @@ exports.getAdminDashboard = async (req, res) => {
     res.status(200).json({
       success: true,
       data: {
-        adminKpis: { totalUsers, facilityOwners, totalBookings, totalRevenue },
+        adminKpis: { totalUsers, facilityOwners, totalBookings },
         pendingFacilities: pendingFacilities.map(f => ({
             id: f._id,
             name: f.name,

@@ -4,6 +4,7 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import { Navigation } from "@/components/navigation"
 import { AuthProvider } from "@/context/AuthContext" // Import the provider
+import { Footer } from "@/components/Footer" // Import the new Footer component
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -24,6 +25,7 @@ export default function RootLayout({
         <AuthProvider> {/* Wrap with AuthProvider */}
           <Navigation />
           <main className="min-h-screen bg-gray-50">{children}</main>
+          <Footer /> {/* Add the Footer component here */}
         </AuthProvider>
       </body>
     </html>

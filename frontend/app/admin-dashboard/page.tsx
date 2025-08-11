@@ -13,7 +13,6 @@ interface AdminKpis {
     totalUsers: number;
     facilityOwners: number;
     totalBookings: number;
-    totalRevenue: number;
 }
 interface PendingFacility {
     id: string;
@@ -127,7 +126,7 @@ export default function AdminDashboard() {
         </div>
 
         {adminKpis && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 {/* KPI Cards */}
                 <Card>
                   <CardHeader><CardTitle>Total Users</CardTitle></CardHeader>
@@ -140,10 +139,6 @@ export default function AdminDashboard() {
                 <Card>
                   <CardHeader><CardTitle>Total Bookings</CardTitle></CardHeader>
                   <CardContent><p className="text-3xl font-bold">{adminKpis.totalBookings}</p></CardContent>
-                </Card>
-                <Card>
-                  <CardHeader><CardTitle>Total Revenue</CardTitle></CardHeader>
-                  <CardContent><p className="text-3xl font-bold">${adminKpis.totalRevenue.toLocaleString()}</p></CardContent>
                 </Card>
             </div>
         )}
