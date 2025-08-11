@@ -6,6 +6,7 @@ import Link from "next/link"
 import { ChevronLeft, ChevronRight, MapPin, Star, Play, Pause } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { useAuth } from "@/context/AuthContext"
 
 const heroImages = [
   {
@@ -131,6 +132,7 @@ const popularSports = [
 ]
 
 export default function HomePage() {
+  const { user } = useAuth();
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isPlaying, setIsPlaying] = useState(true)
   const [isHovered, setIsHovered] = useState(false)
@@ -140,7 +142,6 @@ export default function HomePage() {
     if (isTransitioning) return
     setIsTransitioning(true)
     setCurrentSlide((prev) => (prev + 1) % heroImages.length)
-    // Reset transition state after animation completes
     setTimeout(() => setIsTransitioning(false), 1000)
   }, [isTransitioning])
 
@@ -148,7 +149,6 @@ export default function HomePage() {
     if (isTransitioning) return
     setIsTransitioning(true)
     setCurrentSlide((prev) => (prev - 1 + heroImages.length) % heroImages.length)
-    // Reset transition state after animation completes
     setTimeout(() => setIsTransitioning(false), 1000)
   }, [isTransitioning])
 
@@ -156,7 +156,6 @@ export default function HomePage() {
     if (isTransitioning || index === currentSlide) return
     setIsTransitioning(true)
     setCurrentSlide(index)
-    // Reset transition state after animation completes
     setTimeout(() => setIsTransitioning(false), 1000)
   }, [isTransitioning, currentSlide])
 
@@ -164,30 +163,23 @@ export default function HomePage() {
     setIsPlaying(!isPlaying)
   }, [isPlaying])
 
-  // Auto-play functionality with smoother timing
   useEffect(() => {
     if (!isPlaying || isHovered || isTransitioning) return
-
     const timer = setInterval(() => {
       nextSlide()
-    }, 4000) // 4 seconds for better engagement
-
+    }, 4000)
     return () => clearInterval(timer)
   }, [isPlaying, isHovered, isTransitioning, nextSlide])
 
-  // Keyboard navigation
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
-      if (event.key === 'ArrowLeft') {
-        prevSlide()
-      } else if (event.key === 'ArrowRight') {
-        nextSlide()
-      } else if (event.key === ' ') {
+      if (event.key === 'ArrowLeft') prevSlide()
+      else if (event.key === 'ArrowRight') nextSlide()
+      else if (event.key === ' ') {
         event.preventDefault()
         togglePlayPause()
       }
     }
-
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress)
   }, [prevSlide, nextSlide, togglePlayPause])
@@ -236,67 +228,7 @@ export default function HomePage() {
             </div>
           ))}
         </div>
-
-        {/* Enhanced Navigation Arrows */}
-        <button
-          onClick={prevSlide}
-          disabled={isTransitioning}
-          className={`absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-3 rounded-full transition-all duration-300 hover:scale-110 backdrop-blur-sm border border-white/20 ${
-            isTransitioning ? 'opacity-50 cursor-not-allowed' : ''
-          }`}
-          aria-label="Previous slide"
-        >
-          <ChevronLeft className="w-6 h-6" />
-        </button>
-        <button
-          onClick={nextSlide}
-          disabled={isTransitioning}
-          className={`absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-3 rounded-full transition-all duration-300 hover:scale-110 backdrop-blur-sm border border-white/20 ${
-            isTransitioning ? 'opacity-50 cursor-not-allowed' : ''
-          }`}
-          aria-label="Next slide"
-        >
-          <ChevronRight className="w-6 h-6" />
-        </button>
-
-        {/* Play/Pause Button */}
-        <button
-          onClick={togglePlayPause}
-          className="absolute top-4 right-4 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-all duration-300 backdrop-blur-sm border border-white/20"
-          aria-label={isPlaying ? "Pause slideshow" : "Play slideshow"}
-        >
-          {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
-        </button>
-
-        {/* Enhanced Dots Indicator */}
-        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-3">
-          {heroImages.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => goToSlide(index)}
-              disabled={isTransitioning}
-              className={`w-4 h-4 rounded-full transition-all duration-300 hover:scale-125 ${
-                index === currentSlide 
-                  ? "bg-white shadow-lg" 
-                  : "bg-white/50 hover:bg-white/70"
-              } ${isTransitioning ? 'cursor-not-allowed' : ''}`}
-              aria-label={`Go to slide ${index + 1}`}
-            />
-          ))}
-        </div>
-
-        {/* Slide Counter */}
-        <div className="absolute bottom-4 left-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm backdrop-blur-sm">
-          {currentSlide + 1} / {heroImages.length}
-        </div>
-
-        {/* Progress Bar */}
-        <div className="absolute bottom-0 left-0 w-full h-1 bg-white/20">
-          <div 
-            className="h-full bg-green-500 transition-all duration-1000 ease-linear"
-            style={{ width: `${((currentSlide + 1) / heroImages.length) * 100}%` }}
-          />
-        </div>
+        {/* Navigation and Indicators */}
       </section>
 
       {/* Popular Venues Section */}
@@ -307,7 +239,6 @@ export default function HomePage() {
             View All →
           </Link>
         </div>
-
         <div className="flex overflow-x-auto space-x-4 sm:space-x-6 pb-4 scrollbar-hide">
           {popularVenues.map((venue) => (
             <Card key={venue.id} className="flex-shrink-0 w-72 sm:w-80 hover:shadow-lg transition-shadow">
@@ -353,7 +284,6 @@ export default function HomePage() {
       {/* Popular Sports Section */}
       <section className="py-16 px-4 max-w-7xl mx-auto bg-white rounded-2xl mx-4 shadow-sm">
         <h2 className="text-3xl font-bold text-slate-900 mb-8 text-center">Popular Sports</h2>
-
         <div className="flex overflow-x-auto space-x-4 sm:space-x-6 pb-4 scrollbar-hide">
           {popularSports.map((sport, index) => (
             <Card key={index} className="flex-shrink-0 w-56 sm:w-64 hover:shadow-lg transition-all hover:scale-105">
@@ -399,15 +329,17 @@ export default function HomePage() {
                 Find Venues Near You
               </Button>
             </Link>
-            <Link href="/list-venue">
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-white text-white hover:bg-white hover:text-slate-900 bg-transparent w-full sm:w-auto"
-              >
-                List Your Venue
-              </Button>
-            </Link>
+            {user?.userType === 'owner' && (
+              <Link href="/list-venue">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-white text-white hover:bg-white hover:text-slate-900 bg-transparent w-full sm:w-auto"
+                >
+                  List Your Venue
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </section>

@@ -1,15 +1,19 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
-import { ArrowLeft, Bell, Shield, Eye } from "lucide-react"
+import { ArrowLeft, Bell, Shield, Eye, Save } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useAuth } from "@/context/AuthContext"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 
 export default function SettingsPage() {
+  const { user, token, login, logout } = useAuth();
+  
   const [settings, setSettings] = useState({
     emailNotifications: true,
     smsNotifications: false,
@@ -19,25 +23,77 @@ export default function SettingsPage() {
     profileVisibility: "public",
     language: "en",
     timezone: "America/New_York",
-  })
+  });
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState("");
 
-  const [isSaving, setIsSaving] = useState(false)
+  useEffect(() => {
+    if (user && (user as any).settings) {
+      setSettings((user as any).settings);
+    }
+  }, [user]);
 
   const handleSettingChange = (key: string, value: boolean | string) => {
     setSettings((prev) => ({ ...prev, [key]: value }))
   }
 
   const handleSave = async () => {
-    setIsSaving(true)
+    setIsSaving(true);
+    setError("");
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-      console.log("Settings saved:", settings)
-    } catch (error) {
-      console.error("Error saving settings:", error)
+      const res = await fetch('http://localhost:5000/api/users/settings', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(settings)
+      });
+
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.error || "Failed to save settings");
+      }
+
+      // Update the user in the global context
+      if (token) {
+        login({ user: data.data, token });
+      }
+      
+      // Optionally show a success message
+      alert("Settings saved successfully!");
+
+    } catch (error: any) {
+      setError(error.message);
+      console.error("Error saving settings:", error);
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
+  }
+
+  const handleDeleteAccount = async () => {
+    try {
+        const res = await fetch('http://localhost:5000/api/users/delete', {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const data = await res.json();
+        if (!data.success) {
+            throw new Error(data.error || "Failed to delete account");
+        }
+        
+        logout(); // Log the user out and redirect
+    } catch (error) {
+        console.error("Error deleting account:", error);
+        setError("Failed to delete account. Please try again.");
+    }
+  }
+
+  if (!user) {
+    return <div>Loading...</div>
   }
 
   return (
@@ -61,10 +117,14 @@ export default function SettingsPage() {
                   Saving...
                 </div>
               ) : (
-                "Save Changes"
+                <div className="flex items-center">
+                    <Save className="w-4 h-4 mr-2" />
+                    Save Changes
+                </div>
               )}
             </Button>
           </div>
+          {error && <p className="text-red-500 mt-2">{error}</p>}
         </div>
 
         <div className="space-y-6">
@@ -218,9 +278,27 @@ export default function SettingsPage() {
                   <h3 className="font-medium text-red-900">Delete Account</h3>
                   <p className="text-sm text-red-700">Permanently delete your account and all associated data</p>
                 </div>
-                <Button variant="outline" className="border-red-300 text-red-600 hover:bg-red-100 bg-transparent">
-                  Delete Account
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline" className="border-red-300 text-red-600 hover:bg-red-100 bg-transparent">
+                      Delete Account
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete your account and remove your data from our servers.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDeleteAccount} className="bg-red-600 hover:bg-red-700">
+                        Yes, delete account
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </CardContent>
           </Card>

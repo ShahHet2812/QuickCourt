@@ -1,15 +1,11 @@
 const User = require('../models/User');
 
-// @desc    Get current logged in user
-// @route   GET /api/users/me
+// ... (getMe and updateProfile functions remain the same)
 exports.getMe = async (req, res) => {
-  // req.user is set by the protect middleware
   const user = await User.findById(req.user.id);
   res.status(200).json({ success: true, data: user });
 };
 
-// @desc    Update user details
-// @route   PUT /api/users/profile
 exports.updateProfile = async (req, res) => {
   try {
     const fieldsToUpdate = {
@@ -23,7 +19,6 @@ exports.updateProfile = async (req, res) => {
       zipCode: req.body.zipCode,
     };
 
-    // If a new avatar is uploaded, update its path
     if (req.file) {
       fieldsToUpdate.avatar = `/uploads/avatars/${req.file.filename}`;
     }
@@ -34,6 +29,43 @@ exports.updateProfile = async (req, res) => {
     });
 
     res.status(200).json({ success: true, data: user });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+};
+
+// @desc    Update user settings
+// @route   PUT /api/users/settings
+exports.updateSettings = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+
+    user.settings = req.body;
+    await user.save();
+
+    res.status(200).json({ success: true, data: user });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+};
+
+// @desc    Delete user account
+// @route   DELETE /api/users/delete
+exports.deleteAccount = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+
+    await user.deleteOne();
+
+    res.status(200).json({ success: true, data: {} });
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });
   }

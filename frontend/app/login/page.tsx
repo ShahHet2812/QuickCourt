@@ -41,11 +41,7 @@ export default function LoginPage() {
         throw new Error(data.error || 'Invalid credentials');
       }
 
-      // Call login from context to update global state
       login(data);
-
-      // No need to manually redirect here, login function handles it.
-      // router.push('/');
 
     } catch (error: any) {
       setErrors({ general: error.message });
@@ -131,14 +127,6 @@ export default function LoginPage() {
                 <Link href="/forgot-password" className="text-sm text-green-600 hover:text-green-700 font-medium">
                   Forgot password?
                 </Link>
-                <div className="text-center mt-4">
-                  <p className="text-sm text-gray-600">
-                    Haven't verified your email yet?{" "}
-                    <Link href="/resend-verification" className="text-green-600 hover:text-green-700 font-medium">
-                      Resend verification email
-                    </Link>
-                  </p>
-                </div>
               </div>
 
               <Button
@@ -157,15 +145,12 @@ export default function LoginPage() {
               </Button>
             </form>
 
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white text-gray-500">Or continue with</span>
-              </div>
-            </div>
-
+            <p className="text-center text-sm text-gray-600">
+              Haven't verified your email yet?{" "}
+              <Link href="/resend-verification" className="text-green-600 hover:text-green-700 font-medium">
+                Resend verification email
+              </Link>
+            </p>
             <div className="grid grid-cols-2 gap-3">
                {/* Social Login Buttons Here */}
             </div>

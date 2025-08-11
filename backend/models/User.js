@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const UserSchema = new mongoose.Schema({
+  // ... existing fields (firstName, lastName, email, etc.)
   firstName: { type: String, required: true },
   lastName: { type: String, required: true },
   email: { type: String, required: true, unique: true },
@@ -12,12 +13,24 @@ const UserSchema = new mongoose.Schema({
   avatar: { type: String },
   isVerified: { type: Boolean, default: false },
   status: { type: String, enum: ['active', 'banned'], default: 'active' },
-  // Add these new fields
   bio: { type: String },
   address: { type: String },
   city: { type: String },
   state: { type: String },
   zipCode: { type: String },
+  
+  // Add this settings object
+  settings: {
+    emailNotifications: { type: Boolean, default: true },
+    smsNotifications: { type: Boolean, default: false },
+    bookingReminders: { type: Boolean, default: true },
+    promotionalEmails: { type: Boolean, default: false },
+    twoFactorAuth: { type: Boolean, default: false },
+    profileVisibility: { type: String, enum: ['public', 'private', 'friends'], default: 'public' },
+    language: { type: String, default: 'en' },
+    timezone: { type: String, default: 'America/New_York' },
+  },
+
   createdAt: { type: Date, default: Date.now }
 });
 

@@ -3,7 +3,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 
-// Update the User interface
 interface User {
   _id: string;
   firstName: string;
@@ -29,7 +28,6 @@ interface AuthContextType {
   loading: boolean;
 }
 
-// ... (rest of the file remains the same)
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -61,7 +59,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setToken(data.token);
     localStorage.setItem('user', JSON.stringify(data.user));
     localStorage.setItem('token', data.token);
-    router.push('/');
+
+    // Redirect based on user type
+    switch (data.user.userType) {
+      case 'admin':
+        router.push('/admin-dashboard');
+        break;
+      case 'owner':
+        router.push('/owner-dashboard');
+        break;
+      case 'customer':
+      default:
+        router.push('/');
+        break;
+    }
   };
 
   const logout = () => {
