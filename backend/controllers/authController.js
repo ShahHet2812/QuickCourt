@@ -35,6 +35,8 @@ exports.signup = async (req, res) => {
         await sendEmail({
             email: user.email,
             subject: 'Email Verification',
+            firstName: user.firstName,
+            verificationCode: verificationCode,
             message: `Your verification code is ${verificationCode}`
         });
 
@@ -108,6 +110,8 @@ exports.resendVerificationEmail = async (req, res) => {
         await sendEmail({
             email: user.email,
             subject: 'Email Verification',
+            firstName: user.firstName,
+            verificationCode: verificationCode,
             message: `Your new verification code is ${verificationCode}`
         });
 
@@ -178,6 +182,8 @@ exports.forgotPassword = async (req, res) => {
             await sendEmail({
                 email: user.email,
                 subject: 'Password Reset Token',
+                firstName: user.firstName,
+                verificationCode: resetToken,
                 message: `Your password reset token is: ${resetToken}`
             });
 

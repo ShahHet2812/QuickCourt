@@ -16,11 +16,15 @@ interface KpiData {
     monthlyEarnings: number;
     occupancyRate: number;
 }
+interface Court {
+  name: string;
+  sport: string;
+  price: number;
+}
 interface Facility {
     _id: string;
     name: string;
-    sport: string;
-    courts: number;
+    courts: Court[] | number; // Allow courts to be a number for old data
     status: string;
 }
 interface Booking {
@@ -48,39 +52,59 @@ export default function OwnerDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const fetchData = async () => {
+    if (!token) {
+      setError("Not authenticated");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const res = await fetch('http://localhost:5000/api/owner/dashboard', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to fetch dashboard data');
+      }
+      
+      const { data } = await res.json();
+      setKpiData(data.kpiData);
+      setFacilities(data.facilities);
+      setUpcomingBookings(data.upcomingBookings);
+      setChartData(data.charts);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   useEffect(() => {
-    const fetchData = async () => {
-      if (!token) {
-        setError("Not authenticated");
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        const res = await fetch('http://localhost:5000/api/owner/dashboard', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        if (!res.ok) {
-          const errorData = await res.json();
-          throw new Error(errorData.error || 'Failed to fetch dashboard data');
-        }
-        
-        const { data } = await res.json();
-        setKpiData(data.kpiData);
-        setFacilities(data.facilities);
-        setUpcomingBookings(data.upcomingBookings);
-        setChartData(data.charts);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
   }, [token]);
+
+  const handleDelete = async (venueId: string) => {
+    if (window.confirm("Are you sure you want to request deletion of this venue? This action cannot be undone.")) {
+      try {
+        const res = await fetch(`http://localhost:5000/api/owner/venues/${venueId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) {
+            const errorData = await res.json();
+            throw new Error(errorData.error || "Failed to request deletion");
+        }
+        alert("Deletion request sent for admin approval.");
+        fetchData(); // Refresh data to show updated status
+      } catch (error: any) {
+        console.error(error);
+        alert(`Error: ${error.message}`);
+      }
+    }
+  };
 
   if (loading) return <div className="text-center p-10">Loading Dashboard...</div>
   if (error) return <div className="text-center p-10 text-red-500">Error: {error}</div>
@@ -215,14 +239,28 @@ export default function OwnerDashboard() {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="font-semibold text-lg">{facility.name}</h3>
-                      <Badge className={ facility.status === "active" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}>
-                        {facility.status}
+                      <Badge className={ facility.status === "approved" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}>
+                        {facility.status.replace('_', ' ')}
                       </Badge>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
-                      <div><span className="font-medium">Sport:</span> {facility.sport}</div>
-                      <div><span className="font-medium">Courts:</span> {facility.courts}</div>
+                      <div>
+                        <span className="font-medium">Sports:</span>{' '}
+                        {Array.isArray(facility.courts) ? facility.courts.map(c => c.sport).join(', ') : 'N/A'}
+                      </div>
+                      <div>
+                        <span className="font-medium">Courts:</span>{' '}
+                        {Array.isArray(facility.courts) ? facility.courts.length : facility.courts || 0}
+                      </div>
                     </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Link href={`/list-venue/edit/${facility._id}`}>
+                      <Button variant="outline" size="sm"><Edit className="w-4 h-4 mr-2" />Edit</Button>
+                    </Link>
+                    <Button variant="outline" size="sm" onClick={() => handleDelete(facility._id)} className="text-red-500 hover:bg-red-50 hover:text-red-600">
+                        <Trash2 className="w-4 h-4 mr-2" />Delete
+                    </Button>
                   </div>
                 </div>
               ))}

@@ -3,7 +3,9 @@ const router = express.Router();
 const { signup, login, verifyEmail, resendVerificationEmail, forgotPassword, resetPassword } = require('../controllers/authController');
 const upload = require('../middleware/upload');
 
-router.post('/signup', upload, signup);
+// Correctly apply the multer middleware for a single file upload
+router.post('/signup', upload.single('avatar'), signup);
+
 router.post('/login', login);
 router.post('/verifyemail', verifyEmail);
 router.post('/resendverification', resendVerificationEmail);

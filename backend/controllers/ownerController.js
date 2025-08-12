@@ -7,10 +7,25 @@ exports.getOwnerDashboard = async (req, res) => {
   try {
     const venues = await Venue.find({ owner: req.user.id });
     const venueIds = venues.map(v => v._id);
+
+    // Normalize the venues data to handle both old and new schemas
+    const normalizedVenues = venues.map(venue => {
+        const venueObj = venue.toObject();
+        if (!Array.isArray(venueObj.courts)) {
+            // This is an old venue document, convert it to the new structure
+            venueObj.courts = [{
+                name: 'Main Court',
+                sport: venueObj.sport || 'Unknown',
+                price: venueObj.price || 0
+            }];
+        }
+        return venueObj;
+    });
+
     const bookings = await Booking.find({ venue: { $in: venueIds } }).populate('user', 'firstName lastName');
     
     const totalBookings = bookings.length;
-    const activeCourts = venues.reduce((acc, venue) => acc + (venue.courts || 1), 0);
+    const activeCourts = normalizedVenues.reduce((acc, venue) => acc + (venue.courts.length || 0), 0);
     const monthlyEarnings = bookings
       .filter(b => b.status === 'confirmed' || b.status === 'completed')
       .reduce((acc, booking) => acc + booking.totalPrice, 0);
@@ -20,7 +35,7 @@ exports.getOwnerDashboard = async (req, res) => {
         .filter(b => b.status === 'confirmed' || b.status === 'pending')
         .map(b => ({
             id: b._id,
-            facility: venues.find(v => v._id.equals(b.venue))?.name,
+            facility: normalizedVenues.find(v => v._id.equals(b.venue))?.name,
             court: b.court,
             customer: b.user ? `${b.user.firstName} ${b.user.lastName}` : 'N/A',
             date: new Date(b.date).toISOString().split('T')[0],
@@ -37,7 +52,7 @@ exports.getOwnerDashboard = async (req, res) => {
     }, {});
 
     const earningsSummary = bookings.reduce((acc, booking) => {
-        const venueName = venues.find(v => v._id.equals(booking.venue))?.name || 'Unknown';
+        const venueName = normalizedVenues.find(v => v._id.equals(booking.venue))?.name || 'Unknown';
         if (booking.status === 'confirmed' || booking.status === 'completed') {
             acc[venueName] = (acc[venueName] || 0) + booking.totalPrice;
         }
@@ -56,7 +71,7 @@ exports.getOwnerDashboard = async (req, res) => {
       success: true,
       data: {
         kpiData: { totalBookings, activeCourts, monthlyEarnings, occupancyRate },
-        facilities: venues,
+        facilities: normalizedVenues, // Send the normalized data
         upcomingBookings,
         charts: { bookingTrends, earningsSummary, peakBookingHours }
       }

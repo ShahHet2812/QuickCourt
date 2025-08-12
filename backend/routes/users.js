@@ -5,7 +5,10 @@ const { protect } = require('../middleware/auth');
 const upload = require('../middleware/upload');
 
 router.get('/me', protect, getMe);
-router.put('/profile', protect, upload, updateProfile);
+
+// Correctly apply the multer middleware for a single file upload
+router.put('/profile', protect, upload.single('avatar'), updateProfile);
+
 router.put('/settings', protect, updateSettings);
 router.delete('/delete', protect, deleteAccount);
 router.get('/stats', protect, getUserStats);

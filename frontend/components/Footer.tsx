@@ -51,18 +51,15 @@ export function Footer() {
           <div>
             <h3 className="text-lg font-semibold mb-4">Follow Us</h3>
             <div className="flex space-x-4">
-              <Link href="#" className="text-gray-400 hover:text-white">
-                <Facebook size={20} />
-              </Link>
-              <Link href="#" className="text-gray-400 hover:text-white">
+              <a href="https://x.com/SHAHHet94920284" className="text-gray-400 hover:text-white">
                 <Twitter size={20} />
-              </Link>
-              <Link href="#" className="text-gray-400 hover:text-white">
+              </a>
+              <a href="https://www.instagram.com/het._.shah._/" className="text-gray-400 hover:text-white">
                 <Instagram size={20} />
-              </Link>
-              <Link href="#" className="text-gray-400 hover:text-white">
+              </a>
+              <a href="https://www.linkedin.com/in/het-shah-7264472b3/" className="text-gray-400 hover:text-white">
                 <Linkedin size={20} />
-              </Link>
+              </a>
             </div>
           </div>
         </div>
