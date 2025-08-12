@@ -60,38 +60,16 @@ const heroImages = [
   },
 ]
 
-const popularSports = [
-  {
-    name: "Badminton",
-    venues: 45,
-    image: "/modern-badminton-court.png",
-    color: "bg-blue-500",
-  },
-  {
-    name: "Tennis",
-    venues: 32,
-    image: "/tennis-racket-ball.png",
-    color: "bg-green-500",
-  },
-  {
-    name: "Football",
-    venues: 28,
-    image: "/football-soccer-ball.png",
-    color: "bg-orange-500",
-  },
-  {
-    name: "Basketball",
-    venues: 25,
-    image: "/basketball-hoop-court.png",
-    color: "bg-purple-500",
-  },
-  {
-    name: "Box Cricket",
-    venues: 4,
-    image: "/cricketbox.jpg",
-    color: "bg-red-500",
-  },
-]
+// Static mapping for sport images and colors, can be moved to a config file
+const sportVisuals: { [key: string]: { image: string; color: string } } = {
+  badminton: { image: "/modern-badminton-court.png", color: "bg-blue-500" },
+  tennis: { image: "/tennis-racket-ball.png", color: "bg-green-500" },
+  football: { image: "/football-soccer-ball.png", color: "bg-orange-500" },
+  basketball: { image: "/basketball-hoop-court.png", color: "bg-purple-500" },
+  "box cricket": { image: "/cricketbox.jpg", color: "bg-red-500" },
+  default: { image: "/placeholder.svg", color: "bg-gray-500" },
+};
+
 
 interface Court {
   _id: string;
@@ -109,7 +87,16 @@ interface Venue {
   image?: string;
   amenities: string[];
   courts: Court[];
+  sport: string; // Added sport to venue interface for simplicity
 }
+
+interface PopularSport {
+    name: string;
+    venues: number;
+    image: string;
+    color: string;
+}
+
 
 export default function HomePage() {
   const { user } = useAuth();
@@ -118,6 +105,8 @@ export default function HomePage() {
   const [isHovered, setIsHovered] = useState(false)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [popularVenues, setPopularVenues] = useState<Venue[]>([]);
+  const [popularSports, setPopularSports] = useState<PopularSport[]>([]);
+
 
   useEffect(() => {
     const fetchVenues = async () => {
@@ -127,7 +116,29 @@ export default function HomePage() {
           throw new Error('Failed to fetch venues');
         }
         const { data } = await res.json();
-        setPopularVenues(data.slice(0, 8)); // Fetch more for the slider
+        
+        // Set popular venues for the carousel
+        setPopularVenues(data.sort((a: Venue, b: Venue) => b.rating - a.rating).slice(0, 8));
+
+        // Calculate popular sports from all venues
+        const sportCounts = data.reduce((acc: { [key: string]: number }, venue: Venue) => {
+            const sportName = venue.sport.toLowerCase();
+            acc[sportName] = (acc[sportName] || 0) + 1;
+            return acc;
+        }, {});
+        
+        const sportsData: PopularSport[] = Object.entries(sportCounts).map(([name, count]) => {
+            const visual = sportVisuals[name] || sportVisuals.default;
+            return {
+                name: name.charAt(0).toUpperCase() + name.slice(1),
+                venues: count,
+                image: visual.image,
+                color: visual.color,
+            };
+        });
+        
+        setPopularSports(sportsData);
+
       } catch (err: any) {
         console.error(err.message);
       }
@@ -288,13 +299,13 @@ export default function HomePage() {
                     <CardContent className="p-0">
                       <div className="relative h-48">
                         <Image
-                          src={venue.image || "/placeholder.svg"}
+                          src={venue.image ? `http://localhost:5000${venue.image}` : "/placeholder.svg"}
                           alt={venue.name}
                           fill
                           className="object-cover rounded-t-lg"
                         />
                         <div className="absolute top-2 right-2 bg-white px-2 py-1 rounded-full text-sm font-medium">
-                          {Array.isArray(venue.courts) ? Array.from(new Set(venue.courts.map(c => c.sport))).join(', ') : ''}
+                          {venue.sport}
                         </div>
                       </div>
                       <div className="p-4">

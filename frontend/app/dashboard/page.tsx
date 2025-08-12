@@ -197,11 +197,11 @@ export default function UserDashboard() {
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1 min-w-0">
                           <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-1 truncate">
-                            {booking.venue.name}
+                            {booking.venue ? booking.venue.name : "Venue not available"}
                           </h3>
                           <div className="flex items-center text-gray-600 mb-2">
                             <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
-                            <span className="text-sm truncate">{booking.venue.location}</span>
+                            <span className="text-sm truncate">{booking.venue ? booking.venue.location : "Location not available"}</span>
                           </div>
                         </div>
                         <Badge className={`${getStatusColor(booking.status)} ml-2 flex-shrink-0`}>
@@ -213,7 +213,7 @@ export default function UserDashboard() {
                         <div>
                           <span className="font-medium text-gray-700">Court:</span>
                           <p className="text-gray-600">
-                            {booking.court} ({booking.venue.sport})
+                            {booking.court} ({booking.venue?.sport})
                           </p>
                         </div>
                         <div>

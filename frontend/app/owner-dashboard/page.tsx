@@ -13,9 +13,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 interface KpiData {
     totalBookings: number;
     activeCourts: number;
-    monthlyEarnings: number;
-    occupancyRate: number;
-}
+    monthlyEarnings: number;}
 interface Court {
   name: string;
   sport: string;
@@ -162,17 +160,6 @@ export default function OwnerDashboard() {
                     <p className="text-3xl font-bold text-slate-900">₹{kpiData.monthlyEarnings.toLocaleString()}</p>
                     </div>
                     <div className="bg-yellow-100 p-3 rounded-full"><DollarSign className="w-6 h-6 text-yellow-600" /></div>
-                </div>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                    <div>
-                    <p className="text-sm font-medium text-gray-600">Occupancy Rate</p>
-                    <p className="text-3xl font-bold text-slate-900">{kpiData.occupancyRate}%</p>
-                    </div>
-                    <div className="bg-purple-100 p-3 rounded-full"><TrendingUp className="w-6 h-6 text-purple-600" /></div>
                 </div>
                 </CardContent>
             </Card>
