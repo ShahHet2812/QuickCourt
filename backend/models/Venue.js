@@ -11,13 +11,13 @@ const VenueSchema = new mongoose.Schema({
   amenities: [String],
   courts: { type: Number, default: 1 },
   owner: { type: mongoose.Schema.ObjectId, ref: 'User', required: true },
-  status: { 
-    type: String, 
-    enum: ['pending', 'approved', 'rejected', 'pending_update', 'pending_deletion'], 
-    default: 'pending' 
+  status: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected', 'pending_update', 'pending_deletion'],
+    default: 'pending'
   },
   // Field to store proposed changes for an update
-  pendingUpdates: { type: mongoose.Schema.Types.Mixed }, 
+  pendingUpdates: { type: mongoose.Schema.Types.Mixed },
   createdAt: { type: Date, default: Date.now }
 });
 

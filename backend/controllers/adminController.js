@@ -10,8 +10,8 @@ exports.getAdminDashboard = async (req, res) => {
     const facilityOwners = await User.countDocuments({ userType: 'owner' });
     const totalBookings = await Booking.countDocuments();
 
-    const pendingFacilities = await Venue.find({ 
-      status: { $in: ['pending', 'pending_update', 'pending_deletion'] } 
+    const pendingFacilities = await Venue.find({
+      status: { $in: ['pending', 'pending_update', 'pending_deletion'] }
     }).populate('owner', 'firstName lastName');
     
     const users = await User.find().select('-password');

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Users, Building, Calendar, DollarSign, Search, Check, X, Ban, UserCheck } from "lucide-react"
+import { Users, Building, Calendar, DollarSign, Search, Check, X, Ban, UserCheck, Edit, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useAuth } from "@/context/AuthContext"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 
+// ... (interfaces remain the same)
 interface AdminKpis {
     totalUsers: number;
     facilityOwners: number;
@@ -24,6 +25,7 @@ interface PendingFacility {
     courts: number;
     submittedDate: string;
     status: string;
+    pendingUpdates?: any;
 }
 interface User {
     _id: string;
@@ -41,6 +43,7 @@ interface ChartData {
     mostActiveSports: { _id: string, count: number }[];
     earningsSimulation: { month: string, earnings: number }[];
 }
+
 
 export default function AdminDashboard() {
   const { token } = useAuth();
@@ -98,13 +101,29 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleApproveFacility = (facilityId: string) => {
-    handleApiCall(`http://localhost:5000/api/admin/facilities/${facilityId}/approve`, 'PUT', 'Facility approved!', 'Failed to approve facility');
+  const handleApprovalAction = (facilityId: string, status: string) => {
+    switch (status) {
+        case 'pending':
+            handleApiCall(`http://localhost:5000/api/admin/facilities/${facilityId}/approve`, 'PUT', 'Facility approved!', 'Failed to approve facility');
+            break;
+        case 'pending_update':
+            handleApiCall(`http://localhost:5000/api/admin/venues/${facilityId}/approve-update`, 'PUT', 'Facility update approved!', 'Failed to approve facility update');
+            break;
+        case 'pending_deletion':
+             if (window.confirm("Are you sure you want to approve the DELETION of this venue? This action is permanent.")) {
+                handleApiCall(`http://localhost:5000/api/admin/venues/${facilityId}/approve-delete`, 'DELETE', 'Facility deletion approved!', 'Failed to approve facility deletion');
+            }
+            break;
+        default:
+            alert("Invalid action.");
+    }
   };
 
-  const handleRejectFacility = (facilityId: string) => {
-    if (window.confirm("Are you sure you want to reject and delete this facility?")) {
-      handleApiCall(`http://localhost:5000/api/admin/facilities/${facilityId}/reject`, 'DELETE', 'Facility rejected!', 'Failed to reject facility');
+
+  const handleRejectFacility = (facilityId: string, status: string) => {
+    const action = status === 'pending' ? 'reject and delete' : 'reject the change for';
+    if (window.confirm(`Are you sure you want to ${action} this facility?`)) {
+      handleApiCall(`http://localhost:5000/api/admin/facilities/${facilityId}/reject`, 'DELETE', 'Action completed!', 'Failed to reject action');
     }
   };
 
@@ -134,6 +153,31 @@ export default function AdminDashboard() {
   };
 
   const earningsSimulationData = chartData?.earningsSimulation.map(d => ({...d, month: formatMonth(d.month)}));
+
+  const renderApprovalActions = (facility: PendingFacility) => {
+    const status = facility.status;
+    let approveIcon = <Check className="w-4 h-4" />;
+    let approveText = "Approve";
+
+    if (status === 'pending_update') {
+        approveIcon = <Edit className="w-4 h-4" />;
+        approveText = "Approve Update";
+    } else if (status === 'pending_deletion') {
+        approveIcon = <Trash2 className="w-4 h-4" />;
+        approveText = "Approve Deletion";
+    }
+
+    return (
+      <div className="flex gap-2">
+        <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => handleApprovalAction(facility.id, facility.status)} title={approveText}>
+            {approveIcon}
+        </Button>
+        <Button size="sm" variant="outline" className="text-red-600 border-red-200 hover:bg-red-50" onClick={() => handleRejectFacility(facility.id, facility.status)} title="Reject">
+            <X className="w-4 h-4" />
+        </Button>
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -251,6 +295,7 @@ export default function AdminDashboard() {
                   <TableHead>Owner</TableHead>
                   <TableHead>Sport</TableHead>
                   <TableHead>Submitted</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -262,15 +307,17 @@ export default function AdminDashboard() {
                     <TableCell>{facility.sport}</TableCell>
                     <TableCell>{facility.submittedDate}</TableCell>
                     <TableCell>
-                      <div className="flex gap-2">
-                        <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => handleApproveFacility(facility.id)}><Check className="w-4 h-4" /></Button>
-                        <Button size="sm" variant="outline" className="text-red-600 border-red-200 hover:bg-red-50" onClick={() => handleRejectFacility(facility.id)}><X className="w-4 h-4" /></Button>
-                      </div>
+                        <Badge className={ facility.status === "pending" ? "bg-yellow-100 text-yellow-800" : (facility.status === "pending_update" ? "bg-blue-100 text-blue-800" : "bg-red-100 text-red-800")}>
+                            {facility.status.replace('_', ' ')}
+                        </Badge>
+                    </TableCell>
+                    <TableCell>
+                        {renderApprovalActions(facility)}
                     </TableCell>
                   </TableRow>
                 )) : (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center">No pending approvals</TableCell>
+                    <TableCell colSpan={6} className="text-center">No pending approvals</TableCell>
                   </TableRow>
                 )}
               </TableBody>
@@ -286,9 +333,9 @@ export default function AdminDashboard() {
              <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center gap-2">
                     <Search className="w-5 h-5 text-gray-400" />
-                    <Input 
-                        placeholder="Search by name or email" 
-                        value={searchTerm} 
+                    <Input
+                        placeholder="Search by name or email"
+                        value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="max-w-sm"
                     />

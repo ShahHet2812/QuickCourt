@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { 
-    getAdminDashboard, 
-    approveFacility, 
-    rejectFacility, 
+const {
+    getAdminDashboard,
+    approveFacility,
+    rejectFacility,
     toggleUserBan,
     approveVenueUpdate,
     // Note: rejectVenueUpdate was consolidated into rejectFacility
