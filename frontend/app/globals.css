@@ -375,3 +375,127 @@
 .pulse-green {
   animation: pulse-green 2s infinite;
 }
+/* New Hackathon Theme Colors */
+:root {
+  --hackathon-primary: oklch(0.6 0.2 140); /* Vibrant Green */
+  --hackathon-secondary: oklch(0.4 0.15 300); /* Deep Purple */
+  --hackathon-accent: oklch(0.7 0.2 60); /* Bright Orange */
+  --hackathon-background: oklch(0.1 0 0); /* Near Black */
+  --hackathon-text: oklch(0.95 0 0); /* Off-white */
+}
+
+.dark {
+  --hackathon-primary: oklch(0.7 0.2 140); /* Lighter Vibrant Green */
+  --hackathon-secondary: oklch(0.5 0.15 300); /* Lighter Deep Purple */
+  --hackathon-accent: oklch(0.8 0.2 60); /* Lighter Bright Orange */
+  --hackathon-background: oklch(0.05 0 0); /* Even Darker Black */
+  --hackathon-text: oklch(0.98 0 0); /* White */
+}
+
+/* New Hackathon Utility Classes */
+.bg-hackathon-primary {
+  background-color: var(--hackathon-primary);
+}
+.text-hackathon-primary {
+  color: var(--hackathon-primary);
+}
+.bg-hackathon-secondary {
+  background-color: var(--hackathon-secondary);
+}
+.text-hackathon-secondary {
+  color: var(--hackathon-secondary);
+}
+.bg-hackathon-accent {
+  background-color: var(--hackathon-accent);
+}
+.text-hackathon-accent {
+  color: var(--hackathon-accent);
+}
+.bg-hackathon-background {
+  background-color: var(--hackathon-background);
+}
+.text-hackathon-text {
+  color: var(--hackathon-text);
+}
+
+/* New Hackathon Animations */
+@keyframes pulse-glow {
+  0% {
+    box-shadow: 0 0 0 0 var(--hackathon-primary);
+  }
+  70% {
+    box-shadow: 0 0 0 15px rgba(0, 0, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes bounce-in {
+  0%, 20%, 40%, 60%, 80%, 100% {
+    transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+  }
+  0% {
+    opacity: 0;
+    transform: scale3d(0.3, 0.3, 0.3);
+  }
+  20% {
+    transform: scale3d(1.1, 1.1, 1.1);
+  }
+  40% {
+    transform: scale3d(0.9, 0.9, 0.9);
+  }
+  60% {
+    opacity: 1;
+    transform: scale3d(1.03, 1.03, 1.03);
+  }
+  80% {
+    transform: scale3d(0.97, 0.97, 0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: scale3d(1, 1, 1);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s infinite;
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 0.5s ease-out forwards;
+}
+
+.animate-bounce-in {
+  animation: bounce-in 1s;
+}
+
+/* New Hackathon Hover Effects */
+.hover-scale-glow:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px var(--hackathon-accent);
+  transition: all 0.3s ease-in-out;
+}
+
+.hover-border-pulse:hover {
+  border-color: var(--hackathon-primary);
+  box-shadow: 0 0 10px var(--hackathon-primary);
+  transition: all 0.3s ease-in-out;
+}
+
+.hover-text-shift:hover {
+  color: var(--hackathon-accent);
+  transform: translateX(5px);
+  transition: all 0.2s ease-in-out;
+}
