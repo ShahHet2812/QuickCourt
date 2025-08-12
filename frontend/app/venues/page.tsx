@@ -174,7 +174,7 @@ function VenuesPageContent() {
               <CardContent className="p-0">
                 <div className="relative h-48">
                   <Image
-                    src={venue.image || "/placeholder.svg"}
+                    src={venue.image ? `http://localhost:5000${venue.image}` : "/placeholder.svg"}
                     alt={venue.name}
                     fill
                     className="object-cover rounded-t-lg"

@@ -65,32 +65,29 @@ export default function ListVenuePage() {
     setIsSubmitting(true);
     setError("");
 
-    const location = `${formData.address}, ${formData.city}, ${formData.state} ${formData.zipCode}`;
-    const imageUrl = image ? `/uploads/venues/${image.name}` : "";
-
-    const venueData = {
-      name: formData.name,
-      sport: formData.sport,
-      location: location,
-      price: Number(formData.price),
-      courts: Number(formData.courts),
-      amenities: formData.amenities,
-      image: imageUrl,
-    };
+    const data = new FormData();
+    data.append('name', formData.name);
+    data.append('sport', formData.sport);
+    data.append('location', `${formData.address}, ${formData.city}, ${formData.state}, ${formData.zipCode}`);
+    data.append('price', formData.price);
+    data.append('courts', formData.courts);
+    formData.amenities.forEach(amenity => data.append('amenities[]', amenity));
+    if (image) {
+      data.append('image', image);
+    }
 
     try {
       const res = await fetch('http://localhost:5000/api/owner/venues', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(venueData)
+        body: data
       });
       
-      const data = await res.json();
+      const result = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || "Failed to submit venue");
+        throw new Error(result.error || "Failed to submit venue");
       }
       
       router.push("/list-venue/success");
