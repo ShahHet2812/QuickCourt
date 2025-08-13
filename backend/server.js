@@ -16,12 +16,24 @@ const app = express();
 // Body parser
 app.use(express.json());
 
-// Enable CORS - allow your Vercel domain & local dev
+// Allowed origins for CORS
+const allowedOrigins = [
+  'http://localhost:3000',               // Local development
+  'https://quick-court-two.vercel.app'   // Your deployed frontend
+];
+
+// Enable CORS with specific origins
 app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'https://your-vercel-project-name.vercel.app'
-  ],
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   credentials: true
 }));
 
