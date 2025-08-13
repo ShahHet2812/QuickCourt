@@ -37,7 +37,7 @@ export default function UserDashboard() {
       if (!token) return;
       try {
         setLoading(true);
-        const res = await fetch('http://localhost:5000/api/bookings/mybookings', {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bookings/mybookings`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -66,7 +66,7 @@ export default function UserDashboard() {
     if (!window.confirm("Are you sure you want to cancel this booking?")) return;
 
     try {
-        const res = await fetch(`http://localhost:5000/api/bookings/${bookingId}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bookings/${bookingId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`

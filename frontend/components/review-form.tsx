@@ -32,7 +32,7 @@ export default function ReviewForm({ venueId, onReviewSubmitted }: ReviewFormPro
     }
 
     try {
-      const res = await fetch(`http://localhost:5000/api/venues/${venueId}/reviews`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/venues/${venueId}/reviews`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

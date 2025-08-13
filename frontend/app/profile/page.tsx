@@ -51,12 +51,12 @@ export default function ProfilePage() {
         state: user.state || "",
         zipCode: user.zipCode || "",
         joinDate: new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) || "",
-        avatar: user.avatar ? `http://localhost:5000${user.avatar}` : "",
+        avatar: user.avatar ? `${process.env.NEXT_PUBLIC_API_URL}${user.avatar}` : "",
       });
 
       const fetchStats = async () => {
         try {
-          const res = await fetch('http://localhost:5000/api/users/stats', {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/stats`, {
             headers: {
               'Authorization': `Bearer ${token}`
             }
@@ -95,7 +95,7 @@ export default function ProfilePage() {
         dataToUpdate.append('avatar', avatarFile);
       }
 
-      const res = await fetch('http://localhost:5000/api/users/profile', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/profile`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`

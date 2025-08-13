@@ -77,7 +77,7 @@ export default function ListVenuePage() {
     }
 
     try {
-      const res = await fetch('http://localhost:5000/api/owner/venues', {
+      const res = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/owner/venues', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

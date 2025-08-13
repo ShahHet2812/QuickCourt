@@ -59,7 +59,7 @@ export default function OwnerDashboard() {
 
     try {
       setLoading(true);
-      const res = await fetch('http://localhost:5000/api/owner/dashboard', {
+      const res = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/owner/dashboard', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -87,7 +87,7 @@ export default function OwnerDashboard() {
   const handleDelete = async (venueId: string) => {
     if (window.confirm("Are you sure you want to request deletion of this venue? This action cannot be undone.")) {
       try {
-        const res = await fetch(`http://localhost:5000/api/owner/venues/${venueId}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/owner/venues/${venueId}`, {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${token}` }
         });

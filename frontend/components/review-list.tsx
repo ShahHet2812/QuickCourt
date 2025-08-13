@@ -37,7 +37,7 @@ export default function ReviewList({ venueId, onReviewsUpdated }: ReviewListProp
   const fetchReviews = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await fetch(`http://localhost:5000/api/venues/${venueId}/reviews`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/venues/${venueId}/reviews`);
       if (!res.ok) {
         throw new Error("Failed to fetch reviews.");
       }
@@ -69,7 +69,7 @@ export default function ReviewList({ venueId, onReviewsUpdated }: ReviewListProp
   const handleUpdate = async (reviewId: string) => {
     try {
       // --- FIX: Corrected the fetch URL to include the venueId ---
-      const res = await fetch(`http://localhost:5000/api/venues/${venueId}/reviews/${reviewId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/venues/${venueId}/reviews/${reviewId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -92,7 +92,7 @@ export default function ReviewList({ venueId, onReviewsUpdated }: ReviewListProp
     if (!window.confirm("Are you sure you want to delete this review?")) return;
     try {
       // --- FIX: Corrected the fetch URL to include the venueId ---
-      const res = await fetch(`http://localhost:5000/api/venues/${venueId}/reviews/${reviewId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/venues/${venueId}/reviews/${reviewId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -157,7 +157,7 @@ export default function ReviewList({ venueId, onReviewsUpdated }: ReviewListProp
                         <AvatarImage
                           src={
                             review.user.avatar
-                              ? `http://localhost:5000${review.user.avatar}`
+                              ? `${process.env.NEXT_PUBLIC_API_URL}${review.user.avatar}`
                               : "/placeholder-user.jpg"
                           }
                           alt={`${review.user.firstName}'s avatar`}

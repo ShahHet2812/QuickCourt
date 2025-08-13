@@ -42,7 +42,7 @@ export default function VenueDetailsPage() {
     if (!id) return;
     try {
       setLoading(true);
-      const res = await fetch(`http://localhost:5000/api/venues/${id}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/venues/${id}`);
       if (!res.ok) throw new Error('Failed to fetch venue details');
       const { data } = await res.json();
       setVenue(data);
@@ -56,7 +56,7 @@ export default function VenueDetailsPage() {
   const fetchReviews = async () => {
     if (!id) return;
     try {
-        const res = await fetch(`http://localhost:5000/api/venues/${id}/reviews`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/venues/${id}/reviews`);
         if (!res.ok) throw new Error('Failed to fetch reviews');
         const { data } = await res.json();
         setReviews(data);

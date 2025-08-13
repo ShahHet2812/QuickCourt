@@ -43,7 +43,7 @@ export default function EditVenuePage() {
   useEffect(() => {
     const fetchVenueData = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/venues/${id}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/venues/${id}`);
         if (!res.ok) {
           throw new Error("Failed to fetch venue data.");
         }
@@ -88,7 +88,7 @@ export default function EditVenuePage() {
     setError("");
 
     try {
-      const res = await fetch(`http://localhost:5000/api/owner/venues/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/owner/venues/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -111,7 +111,7 @@ export default function HomePage() {
   useEffect(() => {
     const fetchVenues = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/venues');
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/venues`);
         if (!res.ok) {
           throw new Error('Failed to fetch venues');
         }
@@ -299,7 +299,7 @@ export default function HomePage() {
                     <CardContent className="p-0">
                       <div className="relative h-48">
                         <Image
-                          src={venue.image ? `http://localhost:5000${venue.image}` : "/placeholder.svg"}
+                          src={venue.image ? `${process.env.NEXT_PUBLIC_API_URL}${venue.image}` : "/placeholder.svg"}
                           alt={venue.name}
                           fill
                           className="object-cover rounded-t-lg"

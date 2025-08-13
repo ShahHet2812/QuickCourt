@@ -60,7 +60,7 @@ export default function AdminDashboard() {
     if (!token) return;
     try {
       setLoading(true);
-      const res = await fetch('http://localhost:5000/api/admin/dashboard', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/dashboard`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) {
@@ -104,14 +104,14 @@ export default function AdminDashboard() {
   const handleApprovalAction = (facilityId: string, status: string) => {
     switch (status) {
         case 'pending':
-            handleApiCall(`http://localhost:5000/api/admin/facilities/${facilityId}/approve`, 'PUT', 'Facility approved!', 'Failed to approve facility');
+            handleApiCall(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/facilities/${facilityId}/approve`, 'PUT', 'Facility approved!', 'Failed to approve facility');
             break;
         case 'pending_update':
-            handleApiCall(`http://localhost:5000/api/admin/venues/${facilityId}/approve-update`, 'PUT', 'Facility update approved!', 'Failed to approve facility update');
+            handleApiCall(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/venues/${facilityId}/approve-update`, 'PUT', 'Facility update approved!', 'Failed to approve facility update');
             break;
         case 'pending_deletion':
              if (window.confirm("Are you sure you want to approve the DELETION of this venue? This action is permanent.")) {
-                handleApiCall(`http://localhost:5000/api/admin/venues/${facilityId}/approve-delete`, 'DELETE', 'Facility deletion approved!', 'Failed to approve facility deletion');
+                handleApiCall(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/venues/${facilityId}/approve-delete`, 'DELETE', 'Facility deletion approved!', 'Failed to approve facility deletion');
             }
             break;
         default:
@@ -123,14 +123,14 @@ export default function AdminDashboard() {
   const handleRejectFacility = (facilityId: string, status: string) => {
     const action = status === 'pending' ? 'reject and delete' : 'reject the change for';
     if (window.confirm(`Are you sure you want to ${action} this facility?`)) {
-      handleApiCall(`http://localhost:5000/api/admin/facilities/${facilityId}/reject`, 'DELETE', 'Action completed!', 'Failed to reject action');
+      handleApiCall(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/facilities/${facilityId}/reject`, 'DELETE', 'Action completed!', 'Failed to reject action');
     }
   };
 
   const handleToggleBanUser = (userId: string, currentStatus: string) => {
     const action = currentStatus === 'active' ? 'ban' : 'unban';
     if (window.confirm(`Are you sure you want to ${action} this user?`)) {
-      handleApiCall(`http://localhost:5000/api/admin/users/${userId}/toggle-ban`, 'PUT', `User ${action}ned!`, 'Failed to toggle user ban status');
+      handleApiCall(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/users/${userId}/toggle-ban`, 'PUT', `User ${action}ned!`, 'Failed to toggle user ban status');
     }
   };
   

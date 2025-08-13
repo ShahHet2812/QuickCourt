@@ -24,7 +24,7 @@ export function Navigation() {
   }
 
   const userInitial = user ? `${user.firstName[0]}${user.lastName[0]}` : "U";
-  const avatarUrl = user?.avatar ? `http://localhost:5000${user.avatar}` : "";
+  const avatarUrl = user?.avatar ? `${process.env.NEXT_PUBLIC_API_URL}${user.avatar}` : "";
 
   const renderDashboardLink = () => {
     if (!isLoggedIn || !user) return null;

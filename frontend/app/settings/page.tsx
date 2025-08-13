@@ -14,7 +14,7 @@ export default function SettingsPage() {
 
   const handleDeleteAccount = async () => {
     try {
-        const res = await fetch('http://localhost:5000/api/users/delete', {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/delete`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`

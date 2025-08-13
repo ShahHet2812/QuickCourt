@@ -59,7 +59,7 @@ export default function BookingPage() {
         const selectedCourtName = courts.find(c => c.id.toString() === selectedCourt)?.name;
         if (!selectedCourtName) return;
 
-        const res = await fetch(`http://localhost:5000/api/bookings/booked-slots/${venueId}/${selectedCourtName}/${selectedDate}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bookings/booked-slots/${venueId}/${selectedCourtName}/${selectedDate}`);
         if (res.ok) {
           const { data } = await res.json();
           setBookedSlots(data);
@@ -145,7 +145,7 @@ export default function BookingPage() {
     };
 
     try {
-        const res = await fetch('http://localhost:5000/api/bookings', {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bookings`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
