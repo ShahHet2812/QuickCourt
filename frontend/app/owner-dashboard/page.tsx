@@ -59,7 +59,7 @@ export default function OwnerDashboard() {
 
     try {
       setLoading(true);
-      const res = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/owner/dashboard', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/owner/dashboard`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
