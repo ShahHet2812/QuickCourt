@@ -13,7 +13,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 interface KpiData {
     totalBookings: number;
     activeCourts: number;
-    monthlyEarnings: number;}
+    monthlyEarnings: number;
+}
 interface Court {
   name: string;
   sport: string;
@@ -115,13 +116,13 @@ export default function OwnerDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-8">
           <div>
-            <h1 className="text-4xl font-bold text-slate-900 mb-2">Facility Owner Dashboard</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-2">Facility Owner Dashboard</h1>
             <p className="text-gray-600">Manage your sports facilities and track performance</p>
           </div>
           <Link href="/list-venue">
-            <Button className="bg-green-600 hover:bg-green-700">
+            <Button className="bg-green-600 hover:bg-green-700 w-full sm:w-auto">
               <Plus className="w-4 h-4 mr-2" />
               Add New Facility
             </Button>
@@ -222,15 +223,15 @@ export default function OwnerDashboard() {
           <CardContent>
             <div className="space-y-4">
               {facilities.map((facility) => (
-                <div key={facility._id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="font-semibold text-lg">{facility.name}</h3>
+                <div key={facility._id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg hover:bg-gray-50 gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-3 mb-2 flex-wrap">
+                      <h3 className="font-semibold text-lg truncate">{facility.name}</h3>
                       <Badge className={ facility.status === "approved" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}>
                         {facility.status.replace('_', ' ')}
                       </Badge>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1 text-sm text-gray-600">
                       <div>
                         <span className="font-medium">Sports:</span>{' '}
                         {Array.isArray(facility.courts) ? facility.courts.map(c => c.sport).join(', ') : 'N/A'}
@@ -241,12 +242,16 @@ export default function OwnerDashboard() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 self-end sm:self-center">
                     <Link href={`/list-venue/edit/${facility._id}`}>
-                      <Button variant="outline" size="sm"><Edit className="w-4 h-4 mr-2" />Edit</Button>
+                      <Button variant="outline" size="sm">
+                        <Edit className="w-4 h-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Edit</span>
+                      </Button>
                     </Link>
                     <Button variant="outline" size="sm" onClick={() => handleDelete(facility._id)} className="text-red-500 hover:bg-red-50 hover:text-red-600">
-                        <Trash2 className="w-4 h-4 mr-2" />Delete
+                        <Trash2 className="w-4 h-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Delete</span>
                     </Button>
                   </div>
                 </div>
@@ -260,37 +265,39 @@ export default function OwnerDashboard() {
             <CardTitle>Upcoming Bookings</CardTitle>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Facility</TableHead>
-                  <TableHead>Court</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Date & Time</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {upcomingBookings.map((booking) => (
-                  <TableRow key={booking.id}>
-                    <TableCell className="font-medium">{booking.facility}</TableCell>
-                    <TableCell>{booking.court}</TableCell>
-                    <TableCell>{booking.customer}</TableCell>
-                    <TableCell>
-                      <div>{booking.date}</div>
-                      <div className="text-gray-600">{booking.time}</div>
-                    </TableCell>
-                    <TableCell className="font-medium text-green-600">₹{booking.price}</TableCell>
-                    <TableCell>
-                      <Badge className={ booking.status === "confirmed" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}>
-                        {booking.status}
-                      </Badge>
-                    </TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Facility</TableHead>
+                    <TableHead>Court</TableHead>
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Date & Time</TableHead>
+                    <TableHead>Price</TableHead>
+                    <TableHead>Status</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {upcomingBookings.map((booking) => (
+                    <TableRow key={booking.id}>
+                      <TableCell className="font-medium">{booking.facility}</TableCell>
+                      <TableCell>{booking.court}</TableCell>
+                      <TableCell>{booking.customer}</TableCell>
+                      <TableCell>
+                        <div>{booking.date}</div>
+                        <div className="text-gray-600">{booking.time}</div>
+                      </TableCell>
+                      <TableCell className="font-medium text-green-600">₹{booking.price}</TableCell>
+                      <TableCell>
+                        <Badge className={ booking.status === "confirmed" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}>
+                          {booking.status}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
       </div>

@@ -89,7 +89,7 @@ export default function VenueDetailsPage() {
 
   return (
     <div className="min-h-screen">
-      {/* ... (existing image gallery and venue details section) */}
+      {/* ... (You can add an image gallery here if you have one) ... */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
@@ -99,14 +99,13 @@ export default function VenueDetailsPage() {
                   {venue.sport}
                 </span>
               </div>
-              <h1 className="text-4xl font-bold text-slate-900 mb-2">{venue.name}</h1>
-              <div className="flex items-center gap-4 text-gray-600 mb-4">
+              <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-2">{venue.name}</h1>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-gray-600 mb-4">
                 <div className="flex items-center">
-                  <MapPin className="w-5 h-5 mr-1" />
-                  <span>{venue.location}</span>
+                  <MapPin className="w-5 h-5 mr-1.5 flex-shrink-0" />
+                  <span className="min-w-0">{venue.location}</span>
                 </div>
                 <div className="flex items-center">
-                  {/* Dynamic rating display */}
                   {Array.from({ length: 5 }, (_, i) => (
                     <Star
                       key={i}
